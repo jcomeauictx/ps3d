@@ -13,12 +13,12 @@ test: $(TEST)
 	$(PYLINT) $<
 %.doctest: %.py
 	$(PYTHON) -m doctest $<
-%.obj: ps3d.py %.ps3d
-	./$+ $@ $(@:.obj=.mtl)
-%.view: %.obj
+%.mtl %.obj: ps3d.py %.ps3d
+	./$+ $(@:.mtl=.obj) $(@:.obj=.mtl)
+%.view: %.obj %.mtl
 	-timeout 10 meshlab $<
 view: a_test.view
 %.ps: %.ps3d
-	gs $<
+	-timeout 10 gs $<
 ps: test.ps
 .PRECIOUS: %.obj %.mtl
