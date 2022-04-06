@@ -19,6 +19,6 @@ test: $(TEST)
 	-timeout 10 meshlab $<
 view: a_test.view
 %.ps: %.ps3d
-	-timeout 10 gs $<
+	-timeout 3 gs $<
 ps: test.ps
 .PRECIOUS: %.obj %.mtl
