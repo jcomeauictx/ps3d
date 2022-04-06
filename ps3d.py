@@ -6,16 +6,18 @@ Produces .obj files for 3d printing
 '''
 import sys, logging  # pylint: disable=multiple-imports
 from ast import literal_eval
+from copy import deepcopy
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
 STACK = []
-VERTICES = []
+GSTACK = []  # graphic state stack
 FACES = []
 DEVICE = {
     'PageSize': [0, 0],
     'LineWidth': 1,
     'RGBColor': [0, 0, 0],  # black by default
+    'Path': [],
 }
 
 def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
@@ -56,7 +58,7 @@ def ps3d():
     '''
     words which define the ps3d language
     '''
-    # pylint: disable=possibly-unused-variable
+    # pylint: disable=possibly-unused-variable, too-many-locals
     def add():
         STACK.append(STACK.pop() + STACK.pop())
 
@@ -64,15 +66,18 @@ def ps3d():
         logging.info('stdout: %s', STACK.pop())
 
     def moveto():
-        VERTICES.append([STACK.pop(-2), STACK.pop(), 0])
+        DEVICE['Path'].append([STACK.pop(-2), STACK.pop(), 0, 'moveto'])
 
     def rlineto():
-        if VERTICES:
-            currentpoint = VERTICES[-1]
+        if DEVICE['Path']:
+            currentpoint = DEVICE['Path'][-1]
             displacement = STACK.pop(-2), STACK.pop()
-            VERTICES.append([currentpoint[0] + displacement[0],
-                             currentpoint[1] + displacement[1],
-                             currentpoint[2]])
+            DEVICE['Path'].append([
+                currentpoint[0] + displacement[0],
+                currentpoint[1] + displacement[1],
+                currentpoint[2],
+                'lineto'
+            ])
         else:
             raise ValueError('no current point')
 
@@ -100,6 +105,12 @@ def ps3d():
     def setgray():
         STACK.extend([STACK.pop()] * 3)
         setrgbcolor()
+
+    def gsave():
+        GSTACK.append(deepcopy(DEVICE))
+
+    def grestore():
+        DEVICE.update(GSTACK.pop())
 
     def stroke():
         pass  # no-op for now

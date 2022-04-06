@@ -1,0 +1,9 @@
+%!ps
+% from //riptutorial.com/postscript/example/22739/iterating-through-a-path
+{ exch =only ( ) print =only ( ) print /moveto =} 
+{ exch =only ( ) print =only ( ) print /lineto =}
+{ 6 -2 roll exch =only ( ) print =only ( ) print
+  4 2 roll exch =only ( ) print =only ( ) print
+  exch =only ( ) print =only ( ) print /curveto =}
+{ /closepath = }
+pathforall
