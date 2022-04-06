@@ -28,12 +28,15 @@ def convert(infile=sys.stdin, outfile=sys.stdout):
         for token in tokens:
             line = line.lstrip()[len(token):]
             if token.startswith('%'):
-                outfile.write('# ' + token[1:] + line)
-                continue
+                outfile.write('#' + token[1:] + line)
+                break
             if token in words:
                 words[token]()
             else:
-                STACK.append(literal_eval(token))
+                try:
+                    STACK.append(literal_eval(token))
+                except ValueError as bad:
+                    raise ValueError('unknown value ' + token) from bad
             logging.debug('STACK: %s', STACK)
     infile.close()
     outfile.close()
