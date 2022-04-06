@@ -20,5 +20,8 @@ test: $(TEST)
 view: sample/a_test.view
 %.ps: %.ps3d
 	-timeout 3 gs $<
+%.ps: .FORCE
+	-timeout 3 gs $@
 ps: test.ps
 .PRECIOUS: %.obj %.mtl
+.FORCE:
