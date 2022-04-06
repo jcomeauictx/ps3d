@@ -12,7 +12,11 @@ logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 STACK = []
 VERTICES = []
 FACES = []
-DEVICE = {'PageSize': [0, 0]}
+DEVICE = {
+    'PageSize': [0, 0],
+    'LineWidth': 1,
+    'RGBColor': [0, 0, 0],  # black by default
+}
 
 def convert(infile=sys.stdin, outfile=sys.stdout):
     '''
@@ -87,6 +91,9 @@ def ps3d():
 
     def exch():
         STACK[-2], STACK[-1] = STACK[-1], STACK[-2]
+
+    def setrgbcolor():
+        DEVICE['RGBColor'] = [STACK.pop(-3), STACK.pop(-2), STACK.pop()]
 
     def stroke():
         pass  # no-op for now
