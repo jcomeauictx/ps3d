@@ -16,4 +16,4 @@ test: $(TEST)
 %.doctest: %.py
 	$(PYTHON) -m doctest $<
 view: $(wildcard *.obj)
-	meshlab $<
+	timeout 10 meshlab $<
