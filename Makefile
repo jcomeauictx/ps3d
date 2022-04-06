@@ -15,7 +15,7 @@ test: $(TEST)
 	$(PYTHON) -m doctest $<
 %.mtl %.obj: ps3d.py %.ps3d
 	./$+ $(@:.mtl=.obj) $(@:.obj=.mtl)
-%.view: %.obj %.mtl
+%.view: %.obj
 	-cd $(<D) && timeout 10 meshlab $(<F)
 view: sample/a_test.view
 %.ps: %.ps3d
