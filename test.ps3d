@@ -1,3 +1,5 @@
 %!ps3d test program
-1 1 add
+1 1 add =
+1 1 rlineto stroke
+showpage
 % end program
