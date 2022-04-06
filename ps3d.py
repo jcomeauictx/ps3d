@@ -18,14 +18,14 @@ DEVICE = {
     'RGBColor': [0, 0, 0],  # black by default
 }
 
-def convert(infile=sys.stdin, outfile=sys.stdout):
+def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
     '''
     convert .ps3d file to .obj format
     '''
     if infile != sys.stdin:
         infile = open(infile)
-    if outfile != sys.stdout:
-        outfile = open(outfile, 'w')
+    objfile = open(objfile, 'w')
+    mtlfile = open(mtlfile, 'w')
     words = ps3d()
     shebang = next(infile)
     if not shebang.startswith('%!ps3d'):
@@ -35,7 +35,7 @@ def convert(infile=sys.stdin, outfile=sys.stdout):
         for token in tokens:
             line = line.lstrip()[len(token):]
             if token.startswith('%'):
-                outfile.write('#' + token[1:] + line)
+                objfile.write('#' + token[1:] + line)
                 break
             if token.startswith('/'):
                 STACK.append(token[1:])  # store literal as string
@@ -49,7 +49,8 @@ def convert(infile=sys.stdin, outfile=sys.stdout):
                     raise ValueError('unknown value ' + token) from bad
             logging.debug('STACK: %s', STACK)
     infile.close()
-    outfile.close()
+    objfile.close()
+    mtlfile.close()
 
 def ps3d():
     '''

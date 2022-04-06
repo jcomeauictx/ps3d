@@ -14,11 +14,11 @@ test: $(TEST)
 %.doctest: %.py
 	$(PYTHON) -m doctest $<
 %.obj: ps3d.py %.ps3d
-	./$+ $@
+	./$+ $@ $(@:.obj=.mtl)
 %.view: %.obj
-	timeout 10 meshlab $<
+	-timeout 10 meshlab $<
 view: a_test.view
 %.ps: %.ps3d
 	gs $<
 ps: test.ps
-.PRECIOUS: test.obj
+.PRECIOUS: %.obj %.mtl
