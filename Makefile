@@ -16,8 +16,8 @@ test: $(TEST)
 %.mtl %.obj: ps3d.py %.ps3d
 	./$+ $(@:.mtl=.obj) $(@:.obj=.mtl)
 %.view: %.obj %.mtl
-	-timeout 10 meshlab $<
-view: a_test.view
+	-cd $(<D) && timeout 10 meshlab $(<F)
+view: sample/a_test.view
 %.ps: %.ps3d
 	-timeout 3 gs $<
 ps: test.ps
