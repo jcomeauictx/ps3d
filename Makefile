@@ -15,3 +15,5 @@ test: $(TEST)
 	$(PYLINT) $<
 %.doctest: %.py
 	$(PYTHON) -m doctest $<
+view: $(wildcard *.obj)
+	meshlab $<
