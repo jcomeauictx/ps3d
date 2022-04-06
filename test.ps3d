@@ -1,5 +1,8 @@
 %!ps3d test program
-1 1 add =
-1 1 rlineto stroke
+1 1 add =  % that was just a test
+% move to center of page for testing with ghostscript
+currentpagedevice /PageSize get dup 0 get exch 1 get exch  % width height
+ 2 div exch 2 div moveto
+10 10 rlineto stroke
 showpage
 % end program

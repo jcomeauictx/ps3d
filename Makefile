@@ -17,3 +17,6 @@ test: $(TEST)
 	$(PYTHON) -m doctest $<
 view: $(wildcard *.obj)
 	timeout 10 meshlab $<
+%.ps: %.ps3d
+	gs $<
+ps: test.ps

@@ -10,6 +10,9 @@ from ast import literal_eval
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
 STACK = []
+VERTICES = []
+FACES = []
+DEVICE = {'PageSize': [0, 0]}
 
 def convert(infile=sys.stdin, outfile=sys.stdout):
     '''
@@ -30,6 +33,9 @@ def convert(infile=sys.stdin, outfile=sys.stdout):
             if token.startswith('%'):
                 outfile.write('#' + token[1:] + line)
                 break
+            if token.startswith('/'):
+                STACK.append(token[1:])  # store literal as string
+                continue
             if token in words:
                 words[token]()
             else:
@@ -48,7 +54,49 @@ def ps3d():
     # pylint: disable=possibly-unused-variable
     def add():
         STACK.append(STACK.pop() + STACK.pop())
-    return locals()
+
+    def _print():
+        logging.info('stdout: %s', STACK.pop())
+
+    def moveto():
+        VERTICES.append([STACK.pop(-2), STACK.pop(), 0])
+
+    def rlineto():
+        if VERTICES:
+            currentpoint = VERTICES[-1]
+            displacement = STACK.pop(-2), STACK.pop()
+            VERTICES.append([currentpoint[0] + displacement[0],
+                             currentpoint[1] + displacement[1],
+                             currentpoint[2]])
+        else:
+            raise ValueError('no current point')
+
+    def currentpagedevice():
+        STACK.append(DEVICE)
+
+    def get():
+        index = STACK.pop()
+        STACK.append(STACK.pop().__getitem__(index))
+
+    def div():
+        divisor = STACK.pop()
+        STACK.append(STACK.pop() / divisor)
+
+    def dup():
+        STACK.append(STACK[-1])
+
+    def exch():
+        STACK[-2], STACK[-1] = STACK[-1], STACK[-2]
+
+    def stroke():
+        pass  # no-op for now
+
+    def showpage():
+        pass  # no-op
+
+    words = locals()
+    words['='] = _print
+    return words
 
 if __name__ == '__main__':
     convert(*sys.argv[1:])
