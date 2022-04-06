@@ -95,6 +95,11 @@ def ps3d():
 
     def setrgbcolor():
         DEVICE['RGBColor'] = [STACK.pop(-3), STACK.pop(-2), STACK.pop()]
+        logging.debug('color now: %s', DEVICE['RGBColor'])
+
+    def setgray():
+        STACK.extend([STACK.pop()] * 3)
+        setrgbcolor()
 
     def stroke():
         pass  # no-op for now
