@@ -32,28 +32,42 @@ def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
     words = ps3d()
     shebang = next(infile)
     if not shebang.startswith('%!ps3d'):
-        raise ValueError('valid input should start with "%!ps3d"')
+        if shebang.startswith('%!ps'):
+            logging.warning('plain postscript (not ps3d) file!')
+        else:
+            raise ValueError('valid input should start with "%!ps3d"')
     for line in infile:
-        tokens = line.split()
-        for token in tokens:
-            line = line.lstrip()[len(token):]
-            if token.startswith('%'):
-                objfile.write('#' + token[1:] + line)
-                break
-            if token.startswith('/'):
-                STACK.append(token[1:])  # store literal as string
-                continue
-            if token in words:
-                words[token]()
-            else:
-                try:
-                    STACK.append(literal_eval(token))
-                except ValueError as bad:
-                    raise ValueError('unknown value ' + token) from bad
-            logging.debug('STACK: %s', STACK)
+        process(line, words, objfile, mtlfile)
     infile.close()
     objfile.close()
     mtlfile.close()
+
+def process(line, words, objfile, mtlfile):
+    '''
+    tokenize and interpret line of ps3d code
+    '''
+    tokens = line.split()
+    for token in tokens:
+        line = line.lstrip()[len(token):]
+        if token.startswith('%'):
+            objfile.write('#' + token[1:] + line)
+            break
+        if token.startswith('/'):
+            STACK.append(token[1:])  # store literal as string
+            continue
+        elif token.startswith('('):
+            endstring = line.index(')')  # no nested () in string!
+            STACK.append(token[1:] + line[:endstring])
+            process(line[endstring + 2:], words, objfile, mtlfile)  # skip ') '
+            break
+        if token in words:
+            words[token]()
+        else:
+            try:
+                STACK.append(literal_eval(token))
+            except ValueError as bad:
+                raise ValueError('unknown value ' + token) from bad
+        logging.debug('STACK: %s', STACK)
 
 def ps3d():
     '''
