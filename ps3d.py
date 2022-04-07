@@ -4,7 +4,7 @@ Prototype of a 3D extension of postscript
 
 Produces .obj files for 3d printing
 '''
-import sys, logging  # pylint: disable=multiple-imports
+import sys, os, logging  # pylint: disable=multiple-imports
 from ast import literal_eval
 from copy import deepcopy
 
@@ -28,6 +28,7 @@ def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
         infile = open(infile)
     objfile = open(objfile, 'w')
     mtlfile = open(mtlfile, 'w')
+    print('mtlfile', os.path.basename(mtlfile.name), file=objfile)
     words = ps3d()
     shebang = next(infile)
     if not shebang.startswith('%!ps3d'):
