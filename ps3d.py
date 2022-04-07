@@ -13,12 +13,15 @@ logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 STACK = []
 GSTACK = []  # graphic state stack
 FACES = []
+OUTPUT = type('Files', (), {'obj': None, 'mtl': None})()
 DEVICE = {
     'PageSize': [0, 0],
     'LineWidth': 1,
     'RGBColor': [0, 0, 0],  # black by default
     'Path': [],
 }
+MM = 25.4 / 72  # 1/72" ~= .3mm
+PS3D = {}  # words of the language
 
 def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
     '''
@@ -26,10 +29,10 @@ def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
     '''
     if infile != sys.stdin:
         infile = open(infile)
-    objfile = open(objfile, 'w')
-    mtlfile = open(mtlfile, 'w')
-    print('mtlfile', os.path.basename(mtlfile.name), file=objfile)
-    words = ps3d()
+    OUTPUT.obj = open(objfile, 'w')
+    OUTPUT.mtl = open(mtlfile, 'w')
+    print('mtlfile', os.path.basename(mtlfile), file=OUTPUT.obj)
+    PS3D.update(ps3d())
     shebang = next(infile)
     if not shebang.startswith('%!ps3d'):
         if shebang.startswith('%!ps'):
@@ -37,12 +40,12 @@ def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
         else:
             raise ValueError('valid input should start with "%!ps3d"')
     for line in infile:
-        process(line, words, objfile, mtlfile)
+        process(line)
     infile.close()
-    objfile.close()
-    mtlfile.close()
+    OUTPUT.obj.close()
+    OUTPUT.mtl.close()
 
-def process(line, words, objfile, mtlfile):
+def process(line):
     '''
     tokenize and interpret line of ps3d code
     '''
@@ -50,18 +53,18 @@ def process(line, words, objfile, mtlfile):
     for token in tokens:
         line = line.lstrip()[len(token):]
         if token.startswith('%'):
-            objfile.write('#' + token[1:] + line)
+            print('#' + token[1:] + line, file=OUTPUT.obj)
             break
         if token.startswith('/'):
             STACK.append(token[1:])  # store literal as string
             continue
         elif token.startswith('('):
-            endstring = line.index(')')  # no nested () in string!
+            endstring = line.index(')')  # no nested () allowed in string!
             STACK.append(token[1:] + line[:endstring])
-            process(line[endstring + 2:], words, objfile, mtlfile)  # skip ') '
+            process(line[endstring + 2:])  # skip ') '
             break
-        if token in words:
-            words[token]()
+        if token in PS3D:
+            PS3D[token]()
         else:
             try:
                 STACK.append(literal_eval(token))
@@ -129,12 +132,24 @@ def ps3d():
 
     def stroke():
         path = DEVICE['Path']
+        FACES.append([])
         for index in range(len(path) - 1):
             logging.debug('stroking between %s and %s',
                           path[index], path[index + 1])
+            # convert units to mm when creating vertices
+            FACES[-1].append((  # tuple, not list
+                path[index][0] * MM,
+                path[index][1] * MM,
+                path[index][2] * MM
+            ))
 
     def showpage():
-        pass  # no-op
+        vertices = []
+        for face in FACES:
+            indices = [len(vertices) + 1 + i for i in range(len(face))]
+            for vertex in face:
+                print('v %f %f %f' % vertex, file=OUTPUT.obj)
+            print('f', *indices, file=OUTPUT.obj)
 
     words = locals()
     words['='] = _print

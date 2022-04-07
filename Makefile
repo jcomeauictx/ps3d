@@ -23,5 +23,7 @@ view: sample/a_test.view
 %.ps: .FORCE
 	-timeout 3 gs $@
 ps: test.ps
+clean:
+	rm -f *.obj *.mtl
 .PRECIOUS: %.obj %.mtl
 .FORCE:
