@@ -128,7 +128,10 @@ def ps3d():
         DEVICE.update(GSTACK.pop())
 
     def stroke():
-        pass  # no-op for now
+        path = DEVICE['Path']
+        for index in range(len(path) - 1):
+            logging.debug('stroking between %s and %s',
+                          path[index], path[index + 1])
 
     def showpage():
         pass  # no-op
