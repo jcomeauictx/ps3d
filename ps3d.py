@@ -249,7 +249,7 @@ def ps3d():
                 'bottom': (vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
                 'left': (vertices[i - 1] + 1 for i in [1, 5, 6, 2]),
                 'right': (vertices[i - 1] + 1 for i in [3, 7, 8, 4]),
-                'start': (vertices[i - 1] + 1 for i in [2, 7, 6, 3]),
+                'start': (vertices[i - 1] + 1 for i in [2, 3, 7, 6]),
                 'end': (vertices[i - 1] + 1 for i in [4, 8, 5, 1]),
             }
             return faces
@@ -285,7 +285,7 @@ def ps3d():
             faces = {
                 'top': (vertices[i - 1] + 1 for i in [1, 2, 3, 4]),
                 'bottom': (vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
-                'left': (vertices[i - 1] + 1 for i in [2, 7, 6, 3]),
+                'left': (vertices[i - 1] + 1 for i in [2, 3, 7, 6]),
                 'right': (vertices[i - 1] + 1 for i in [4, 8, 5, 1]),
                 'start': (vertices[i - 1] + 1 for i in [1, 5, 6, 2]),
                 'end': (vertices[i - 1] + 1 for i in [3, 7, 8, 4]),
