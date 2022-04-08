@@ -4,6 +4,7 @@
 currentpagedevice /PageSize get dup 0 get exch 1 get exch  % width height
  2 div exch 2 div moveto
 1 0 0 setrgbcolor  % color to red
+5 setlinewidth  % wider than 1mm
 10 10 rlineto
 0 -5 rlineto stroke
 showpage

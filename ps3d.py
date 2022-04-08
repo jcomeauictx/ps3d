@@ -137,7 +137,8 @@ def ps3d():
     '''
     words which define the ps3d language
     '''
-    # pylint: disable=possibly-unused-variable, too-many-locals
+    # pylint: disable=possibly-unused-variable
+    # pylint: disable=too-many-statements, too-many-locals  # can't be helped
     def add():
         STACK.append(STACK.pop() + STACK.pop())
 
@@ -190,6 +191,9 @@ def ps3d():
 
     def grestore():
         DEVICE.update(GSTACK.pop())
+
+    def setlinewidth():
+        DEVICE['LineWidth'] = STACK.pop()
 
     def stroke():
         '''
