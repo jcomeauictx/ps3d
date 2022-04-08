@@ -55,7 +55,10 @@ def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
         infile = open(infile)
     OUTPUT.obj = open(objfile, 'w')
     OUTPUT.mtl = open(mtlfile, 'w')
-    print('mtlfile', os.path.basename(mtlfile), file=OUTPUT.obj)
+    print('mtllib', os.path.basename(mtlfile), file=OUTPUT.obj)
+    print('usemtl mtl0', file=OUTPUT.obj)
+    print('newmtl mtl0', file=OUTPUT.mtl)
+    print('Kd 1 1 1', file=OUTPUT.mtl)  # black in postscript, white in 3D
     PS3D.update(ps3d())
     shebang = next(infile)
     if not shebang.startswith('%!ps3d'):
@@ -77,7 +80,7 @@ def process(line):
     for token in tokens:
         line = line.lstrip()[len(token):]
         if token.startswith('%'):
-            print('#' + token[1:] + line, file=OUTPUT.obj)
+            print('#' + token[1:] + line.rstrip(), file=OUTPUT.obj)
             break
         if token.startswith('/'):
             STACK.append(token[1:])  # store literal as string
