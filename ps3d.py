@@ -120,12 +120,15 @@ def ps3d():
 
     def moveto():
         DEVICE['Path'].append(Triplet(
-            (STACK.pop(-2), STACK.pop(), 0, 'moveto')))
+            STACK.pop(-2), STACK.pop(), 0, 'moveto'
+        ))
 
     def rlineto():
         if DEVICE['Path']:
             currentpoint = DEVICE['Path'][-1]
             displacement = Triplet(STACK.pop(-2), STACK.pop(), 0, 'lineto')
+            logging.debug('adding %s and %s and appending to %s',
+                          currentpoint, displacement, DEVICE['Path'])
             DEVICE['Path'].append(currentpoint + displacement)
         else:
             raise ValueError('no current point')
