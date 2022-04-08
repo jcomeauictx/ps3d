@@ -244,8 +244,38 @@ def ps3d():
         def quadrant2():
             pass
 
-        def quadrant3():
-            pass
+        def quadrant3(start, end, sin_offset, cos_offset):
+            '''
+            calculate faces for segment in quadrant 0
+
+            easier to think about what's going on by numbering vertices
+            starting from top left and going counterclockwise, regardless
+            of quadrant; which is why we need a separate routine for each,
+            because "top left" changes by quadrant. calculate quadrant
+            using theta // 90.
+
+            these were all worked out by hand on graph paper...
+            '''
+            vertices = [get_vertex(point) for point in (
+                start + Triplet(sin_offset, cos_offset),
+                start + Triplet(-sin_offset, -cos_offset),
+                end + Triplet(-sin_offset, -cos_offset),
+                end + Triplet(sin_offset, cos_offset),
+                start + Triplet(sin_offset, cos_offset, MM),
+                start + Triplet(-sin_offset, -cos_offset, MM),
+                end + Triplet(-sin_offset, -cos_offset, MM),
+                end + Triplet(sin_offset, cos_offset, MM)
+            )]
+            logging.debug('vertices: %s', vertices)
+            faces = {
+                'top': (vertices[i - 1] + 1 for i in [1, 2, 3, 4]),
+                'bottom': (vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
+                'left': (vertices[i - 1] + 1 for i in [2, 7, 6, 3]),
+                'right': (vertices[i - 1] + 1 for i in [4, 8, 5, 1]),
+                'start': (vertices[i - 1] + 1 for i in [1, 5, 6, 2]),
+                'end': (vertices[i - 1] + 1 for i in [3, 7, 8, 4]),
+            }
+            return faces
 
         def get_faces(start, end):
             theta = atan2(start, end)
