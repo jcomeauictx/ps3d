@@ -19,6 +19,7 @@ logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
 STACK = []
 GSTACK = []  # graphic state stack
+VERTICES = []
 FACES = []
 OUTPUT = type('Files', (), {'obj': None, 'mtl': None})()
 DEVICE = {
@@ -43,6 +44,8 @@ Triplet.__add__ = lambda self, other: Triplet(
 Triplet.__mul__ = lambda self, other: Triplet(  # only scalar
     self.x * other, self.y * other, self.z * other, self.type
 )
+# check equality only for x, y, z
+Triplet.__eq__ = lambda self, other: self[:3] == other[:3]
 
 def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
     '''
@@ -95,11 +98,13 @@ def process(line):
 
 def atan2(point0, point1):
     '''
-    angle in degrees between two points in the xy plane
+    angle in positive degrees between two points in the xy plane
     '''
-    return math.degrees(math.atan2(
+    atan = math.degrees(math.atan2(
         point1.y - point0.y, point1.x - point0.x
     ))
+    # make sure it's positive
+    return (360 + atan) % 360
 
 def sin(theta):
     '''
@@ -113,6 +118,18 @@ def cos(theta):
     '''
     return math.cos(math.radians(theta))
 
+def get_vertex(point):
+    '''
+    return index into VERTICES for given point
+
+    must be 1-based to use in face ('f') statement
+    '''
+    try:
+        return VERTICES.index(point)
+    except ValueError:
+        VERTICES.append(point)
+        return len(VERTICES) - 1
+
 def ps3d():
     '''
     words which define the ps3d language
@@ -125,6 +142,7 @@ def ps3d():
         logging.info('stdout: %s', STACK.pop())
 
     def moveto():
+        DEVICE['Path'][:] = []  # clear current path
         DEVICE['Path'].append(Triplet(
             STACK.pop(-2), STACK.pop(), 0, 'moveto'
         ))
@@ -174,31 +192,89 @@ def ps3d():
         '''
         draw current path as a single, thin, ridge
 
-        using DEVICE['LineWidth'] as thickness, may need to revisit that
+        using millimeter (MM) as thickness for now
         '''
         path = DEVICE['Path']
-        halfwidth = DEVICE['LineWidth'] / 2
-        logging.debug('half line width: %s', halfwidth)
-        FACES.append([])
+        halfwidth = (DEVICE['LineWidth'] / 2) * MM
+        logging.debug('half line width: %s mm', halfwidth)
+        segments = []
         # we need to make 3 loops, building boxes around the path segments;
         # the outmost loop iterates over the segments;
         # the next inner loop creates the faces: front, top, rear, bottom;
         # the innermost loop creates the vertices.
         # vertices can and should be reused
-        for index in range(len(path) - 1):
-            theta = atan2(path[index], path[index + 1])
+        # should add a face to each end of the resulting path
+        # convert units to mm when creating vertices
+        def quadrant0(start, end, sin_offset, cos_offset):
+            '''
+            calculate faces for segment in quadrant 0
+
+            easier to think about what's going on by numbering vertices
+            starting from top left and going counterclockwise, regardless
+            of quadrant; which is why we need a separate routine for each,
+            because "top left" changes by quadrant. calculate quadrant
+            using theta // 90.
+
+            these were all worked out by hand on graph paper...
+            '''
+            vertices = [get_vertex(point) for point in (
+                end + Triplet(-sin_offset, cos_offset),
+                start + Triplet(-sin_offset, cos_offset),
+                start + Triplet(sin_offset, -cos_offset),
+                end + Triplet(sin_offset, -cos_offset),
+                end + Triplet(-sin_offset, cos_offset, MM),
+                start + Triplet(-sin_offset, cos_offset, MM),
+                start + Triplet(sin_offset, -cos_offset, MM),
+                end + Triplet(sin_offset, -cos_offset, MM)
+            )]
+            logging.debug('vertices: %s', vertices)
+            faces = {
+                'top': (vertices[i - 1] + 1 for i in [1, 2, 3, 4]),
+                'bottom': (vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
+                'left': (vertices[i - 1] + 1 for i in [1, 5, 6, 2]),
+                'right': (vertices[i - 1] + 1 for i in [3, 7, 8, 4]),
+                'start': (vertices[i - 1] + 1 for i in [2, 7, 6, 3]),
+                'end': (vertices[i - 1] + 1 for i in [4, 8, 5, 1]),
+            }
+            return faces
+
+        def quadrant1():
+            pass
+
+        def quadrant2():
+            pass
+
+        def quadrant3():
+            pass
+
+        def get_faces(start, end):
+            theta = atan2(start, end)
             logging.debug('stroking between %s and %s, angle %s degrees',
                           path[index], path[index + 1], theta)
-            # convert units to mm when creating vertices
+            routines = [quadrant0, quadrant1, quadrant2, quadrant3]
+            adjustment = halfwidth * MM
+            return routines[int(theta //90)](
+                start,
+                end,
+                sin(theta) * adjustment,
+                cos(theta) * adjustment)
+
+        for index in range(len(path) - 1):
+            segments.append(get_faces(path[index], path[index + 1]))
+        FACES.append(segments[0]['start'])  # near end cap
+        for segment in segments:
+            FACES.extend([
+                segment[k] for k in ('top', 'left', 'bottom', 'right')
+            ])
+        FACES.append(segments[-1]['end'])  # far end cap
+
+        DEVICE['Path'][:] = []  # clear path after stroke
 
     def showpage():
-        vertices = []
+        for vertex in VERTICES:
+            print('v %f %f %f' % vertex[:3], file=OUTPUT.obj)
         for face in FACES:
-            indices = [len(vertices) + 1 + i for i in range(len(face))]
-            for vertex in face:
-                print('v %f %f %f' % vertex[:3], file=OUTPUT.obj)
-                vertices.append(vertex)
-            print('f', *indices, file=OUTPUT.obj)
+            print('f', *face, file=OUTPUT.obj)
 
     words = locals()
     words['='] = _print
