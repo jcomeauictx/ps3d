@@ -250,7 +250,7 @@ def ps3d():
                 'top': (vertices[i - 1] + 1 for i in [5, 6, 7, 8]),
                 'bottom': (vertices[i - 1] + 1 for i in [4, 3, 2, 1]),
                 'left': (vertices[i - 1] + 1 for i in [2, 6, 5, 1]),
-                'right': (vertices[i - 1] + 1 for i in [3, 7, 8, 4]),
+                'right': (vertices[i - 1] + 1 for i in [8, 7, 3, 4]),
                 'start': (vertices[i - 1] + 1 for i in [2, 3, 7, 6]),
                 'end': (vertices[i - 1] + 1 for i in [4, 8, 5, 1]),
             }
