@@ -3,6 +3,12 @@
 Prototype of a 3D extension of postscript
 
 Produces .obj files for 3d printing
+
+Some notes:
+    Z axis points towards viewer, -Z points away.
+    Vertices can be created in any order, *but* faces must enumerate them
+    in counterclockwise order; otherwise they will appear backwards (dark side
+    to viewer) or broken (if neither CW nor CCW).
 '''
 import sys, os, math, logging  # pylint: disable=multiple-imports
 from ast import literal_eval
@@ -169,10 +175,6 @@ def ps3d():
         draw current path as a single, thin, ridge
 
         using DEVICE['LineWidth'] as thickness, may need to revisit that
-
-        vertices should be stored counterclockwise as per obj specification
-
-        FIXME: this version assumes path is in XY plane!
         '''
         path = DEVICE['Path']
         halfwidth = DEVICE['LineWidth'] / 2
@@ -181,7 +183,7 @@ def ps3d():
         # we need to make 3 loops, building boxes around the path segments;
         # the outmost loop iterates over the segments;
         # the next inner loop creates the faces: front, top, rear, bottom;
-        # the innermost loop creates the vertices, in counterclockwise order.
+        # the innermost loop creates the vertices.
         # vertices can and should be reused
         for index in range(len(path) - 1):
             theta = atan2(path[index + 1], path[index])
@@ -194,7 +196,8 @@ def ps3d():
         for face in FACES:
             indices = [len(vertices) + 1 + i for i in range(len(face))]
             for vertex in face:
-                print('v %f %f %f' % vertex, file=OUTPUT.obj)
+                print('v %f %f %f' % vertex[:3], file=OUTPUT.obj)
+                vertices.append(vertex)
             print('f', *indices, file=OUTPUT.obj)
 
     words = locals()
