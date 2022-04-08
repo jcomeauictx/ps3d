@@ -186,7 +186,7 @@ def ps3d():
         # the innermost loop creates the vertices.
         # vertices can and should be reused
         for index in range(len(path) - 1):
-            theta = atan2(path[index + 1], path[index])
+            theta = atan2(path[index], path[index + 1])
             logging.debug('stroking between %s and %s, angle %s degrees',
                           path[index], path[index + 1], theta)
             # convert units to mm when creating vertices
