@@ -274,10 +274,12 @@ def ps3d():
             these were all worked out by hand on graph paper...
             '''
             vertices = [get_vertex(point) for point in (
+                # creating the base (bottom), z=0
                 start + Triplet(sin_offset, cos_offset),
                 start + Triplet(-sin_offset, -cos_offset),
                 end + Triplet(-sin_offset, -cos_offset),
                 end + Triplet(sin_offset, cos_offset),
+                # on finishing the stroke (top), z>0
                 start + Triplet(sin_offset, cos_offset, MM),
                 start + Triplet(-sin_offset, -cos_offset, MM),
                 end + Triplet(-sin_offset, -cos_offset, MM),
@@ -285,8 +287,8 @@ def ps3d():
             )]
             logging.debug('vertices: %s', vertices)
             faces = {
-                'top': (vertices[i - 1] + 1 for i in [1, 2, 3, 4]),
-                'bottom': (vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
+                'top': (vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
+                'bottom': (vertices[i - 1] + 1 for i in [1, 2, 3, 4]),
                 'left': (vertices[i - 1] + 1 for i in [2, 6, 7, 3]),
                 'right': (vertices[i - 1] + 1 for i in [4, 8, 5, 1]),
                 'start': (vertices[i - 1] + 1 for i in [1, 5, 6, 2]),
