@@ -217,7 +217,7 @@ def ps3d():
         segments = []
         # we need to make 3 loops, building boxes around the path segments;
         # the outmost loop iterates over the segments;
-        # the next inner loop creates the faces: front, top, rear, bottom;
+        # the next inner loop creates the faces: top, bottom, left, right;
         # the innermost loop creates the vertices.
         # vertices can and should be reused
         # should add a face to each end of the resulting path
@@ -234,10 +234,12 @@ def ps3d():
             these were all worked out by hand on graph paper...
             '''
             vertices = [get_vertex(point) for point in (
+                # creating the base (bottom), z=0
                 end + Triplet(-sin_offset, cos_offset),
                 start + Triplet(-sin_offset, cos_offset),
                 start + Triplet(sin_offset, -cos_offset),
                 end + Triplet(sin_offset, -cos_offset),
+                # on finishing the stroke (top), z>0
                 end + Triplet(-sin_offset, cos_offset, MM),
                 start + Triplet(-sin_offset, cos_offset, MM),
                 start + Triplet(sin_offset, -cos_offset, MM),
@@ -245,8 +247,8 @@ def ps3d():
             )]
             logging.debug('vertices: %s', vertices)
             faces = {
-                'top': (vertices[i - 1] + 1 for i in [1, 2, 3, 4]),
-                'bottom': (vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
+                'top': (vertices[i - 1] + 1 for i in [5, 6, 7, 8]),
+                'bottom': (vertices[i - 1] + 1 for i in [4, 3, 2, 1]),
                 'left': (vertices[i - 1] + 1 for i in [1, 5, 6, 2]),
                 'right': (vertices[i - 1] + 1 for i in [3, 7, 8, 4]),
                 'start': (vertices[i - 1] + 1 for i in [2, 3, 7, 6]),
