@@ -121,6 +121,16 @@ def cos(theta):
     '''
     return math.cos(math.radians(theta))
 
+def quadrant(theta):
+    '''
+    return Cartesian quadrant for angle
+
+    this is slightly modified, because I'm using "upper left" for the start
+    of drawing, which means 0 degrees should be quadrant 3, 90 degrees should
+    be quadrant 1, etc.
+    '''
+    return int((theta - sys.float_info.min) // 90)
+
 def get_vertex(point):
     '''
     return index into VERTICES for given point
@@ -219,8 +229,7 @@ def ps3d():
             easier to think about what's going on by numbering vertices
             starting from top left and going counterclockwise, regardless
             of quadrant; which is why we need a separate routine for each,
-            because "top left" changes by quadrant. calculate quadrant
-            using theta // 90.
+            because "top left" changes by quadrant.
 
             these were all worked out by hand on graph paper...
             '''
@@ -258,8 +267,7 @@ def ps3d():
             easier to think about what's going on by numbering vertices
             starting from top left and going counterclockwise, regardless
             of quadrant; which is why we need a separate routine for each,
-            because "top left" changes by quadrant. calculate quadrant
-            using theta // 90.
+            because "top left" changes by quadrant.
 
             these were all worked out by hand on graph paper...
             '''
@@ -290,7 +298,7 @@ def ps3d():
                           path[index], path[index + 1], theta)
             routines = [quadrant0, quadrant1, quadrant2, quadrant3]
             adjustment = halfwidth * MM
-            return routines[int(theta //90)](
+            return routines[quadrant(theta)](
                 start,
                 end,
                 sin(theta) * adjustment,
