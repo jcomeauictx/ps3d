@@ -4,9 +4,10 @@ Prototype of a 3D extension of postscript
 
 Produces .obj files for 3d printing
 '''
-import sys, os, logging  # pylint: disable=multiple-imports
+import sys, os, math, logging  # pylint: disable=multiple-imports
 from ast import literal_eval
 from copy import deepcopy
+from collections import namedtuple
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
@@ -22,6 +23,20 @@ DEVICE = {
 }
 MM = 25.4 / 72  # 1/72" ~= .3mm
 PS3D = {}  # words of the language
+# Triplet: x, y, z values that can be used in arithmetic operations with scalars
+Triplet = namedtuple(
+    'Triplet',
+    ('x', 'y', 'z', 'type'),
+    defaults=(0, 0, 0, None)
+)
+Triplet.__add__ = lambda self, other: Triplet(
+    self.x + other.x, self.y + other.y, self.z + other.z, other.type
+) if hasattr(other, 'x') else Triplet(
+    self.x + other, self.y + other, self.z + other, self.type
+)
+Triplet.__mul__ = lambda self, other: Triplet(  # only scalar
+    self.x * other, self.y * other, self.z * other, self.type
+)
 
 def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
     '''
@@ -72,6 +87,26 @@ def process(line):
                 raise ValueError('unknown value ' + token) from bad
         logging.debug('STACK: %s', STACK)
 
+def atan2(point0, point1):
+    '''
+    angle in degrees between two points in the xy plane
+    '''
+    return math.degrees(math.atan2(
+        point1.y - point0.y, point1.x - point0.x
+    ))
+
+def sin(theta):
+    '''
+    y displacement for given angle theta (degrees)
+    '''
+    return math.sin(math.radians(theta))
+
+def cos(theta):
+    '''
+    x displacement for given angle theta (degrees)
+    '''
+    return math.cos(math.radians(theta))
+
 def ps3d():
     '''
     words which define the ps3d language
@@ -84,18 +119,14 @@ def ps3d():
         logging.info('stdout: %s', STACK.pop())
 
     def moveto():
-        DEVICE['Path'].append([STACK.pop(-2), STACK.pop(), 0, 'moveto'])
+        DEVICE['Path'].append(Triplet(
+            (STACK.pop(-2), STACK.pop(), 0, 'moveto')))
 
     def rlineto():
         if DEVICE['Path']:
             currentpoint = DEVICE['Path'][-1]
-            displacement = STACK.pop(-2), STACK.pop()
-            DEVICE['Path'].append([
-                currentpoint[0] + displacement[0],
-                currentpoint[1] + displacement[1],
-                currentpoint[2],
-                'lineto'
-            ])
+            displacement = Triplet(STACK.pop(-2), STACK.pop(), 0, 'lineto')
+            DEVICE['Path'].append(currentpoint + displacement)
         else:
             raise ValueError('no current point')
 
@@ -131,17 +162,29 @@ def ps3d():
         DEVICE.update(GSTACK.pop())
 
     def stroke():
+        '''
+        draw current path as a single, thin, ridge
+
+        using DEVICE['LineWidth'] as thickness, may need to revisit that
+
+        vertices should be stored counterclockwise as per obj specification
+
+        FIXME: this version assumes path is in XY plane!
+        '''
         path = DEVICE['Path']
+        halfwidth = DEVICE['LineWidth'] / 2
+        logging.debug('half line width: %s', halfwidth)
         FACES.append([])
+        # we need to make 3 loops, building boxes around the path segments;
+        # the outmost loop iterates over the segments;
+        # the next inner loop creates the faces: front, top, rear, bottom;
+        # the innermost loop creates the vertices, in counterclockwise order.
+        # vertices can and should be reused
         for index in range(len(path) - 1):
-            logging.debug('stroking between %s and %s',
-                          path[index], path[index + 1])
+            theta = atan2(path[index + 1], path[index])
+            logging.debug('stroking between %s and %s, angle %s degrees',
+                          path[index], path[index + 1], theta)
             # convert units to mm when creating vertices
-            FACES[-1].append((  # tuple, not list
-                path[index][0] * MM,
-                path[index][1] * MM,
-                path[index][2] * MM
-            ))
 
     def showpage():
         vertices = []
