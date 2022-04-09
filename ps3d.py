@@ -28,7 +28,7 @@ DEVICE = {
     'RGBColor': [0, 0, 0],  # black by default
     'Path': [],
 }
-MM = 25.4 / 72  # 1/72" ~= .35mm
+MM = 25.4 / 72  # 1/72" ~= .35mm; in case we want to convert
 PS3D = {}  # words of the language
 # Triplet: x, y, z values that can be used in arithmetic operations with scalars
 Triplet = namedtuple(
@@ -55,6 +55,8 @@ def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
         infile = open(infile)
     OUTPUT.obj = open(objfile, 'w')
     OUTPUT.mtl = open(mtlfile, 'w')
+    print('# units are 1/72 inch, same as PostScript', file=OUTPUT.obj)
+    print("# that's .013888 inches or .352777 mm", file=OUTPUT.obj)
     print('mtllib', os.path.basename(mtlfile), file=OUTPUT.obj)
     print('usemtl mtl0', file=OUTPUT.obj)
     print('newmtl mtl0', file=OUTPUT.mtl)
@@ -209,10 +211,14 @@ def ps3d():
         '''
         draw current path as a single, thin, ridge
 
-        using millimeter (MM) as thickness for now
+        using line width as thickness for now; it should probably be at least
+        3 PostScript units, about 1mm, to be rendered properly by 3D printer
         '''
         path = DEVICE['Path']
-        halfwidth = (DEVICE['LineWidth'] / 2) * MM
+        linewidth = DEVICE['LineWidth']
+        if linewidth < 3:
+            logging.warning('Width less than a millimeter, may not work')
+        halfwidth = linewidth / 2
         logging.debug('half line width: %s mm', halfwidth)
         segments = []
         # we need to make 3 loops, building boxes around the path segments;
@@ -221,7 +227,6 @@ def ps3d():
         # the innermost loop creates the vertices.
         # vertices can and should be reused
         # should add a face to each end of the resulting path
-        # convert units to mm when creating vertices
         def quadrant0(start, end, sin_offset, cos_offset):
             '''
             calculate faces for segment in quadrant 0
@@ -240,10 +245,10 @@ def ps3d():
                 start + Triplet(sin_offset, -cos_offset),
                 end + Triplet(sin_offset, -cos_offset),
                 # on finishing the stroke (top), z>0
-                end + Triplet(-sin_offset, cos_offset, MM),
-                start + Triplet(-sin_offset, cos_offset, MM),
-                start + Triplet(sin_offset, -cos_offset, MM),
-                end + Triplet(sin_offset, -cos_offset, MM)
+                end + Triplet(-sin_offset, cos_offset, linewidth),
+                start + Triplet(-sin_offset, cos_offset, linewidth),
+                start + Triplet(sin_offset, -cos_offset, linewidth),
+                end + Triplet(sin_offset, -cos_offset, linewidth)
             )]
             logging.debug('vertices: %s', vertices)
             faces = {
@@ -280,10 +285,10 @@ def ps3d():
                 end + Triplet(-sin_offset, -cos_offset),
                 end + Triplet(sin_offset, cos_offset),
                 # on finishing the stroke (top), z>0
-                start + Triplet(sin_offset, cos_offset, MM),
-                start + Triplet(-sin_offset, -cos_offset, MM),
-                end + Triplet(-sin_offset, -cos_offset, MM),
-                end + Triplet(sin_offset, cos_offset, MM)
+                start + Triplet(sin_offset, cos_offset, linewidth),
+                start + Triplet(-sin_offset, -cos_offset, linewidth),
+                end + Triplet(-sin_offset, -cos_offset, linewidth),
+                end + Triplet(sin_offset, cos_offset, linewidth)
             )]
             logging.debug('vertices: %s', vertices)
             faces = {
@@ -301,10 +306,10 @@ def ps3d():
             logging.debug('stroking between %s and %s, angle %s degrees',
                           path[index], path[index + 1], theta)
             routines = [quadrant0, quadrant1, quadrant2, quadrant3]
-            adjustment = halfwidth * MM
+            adjustment = halfwidth
             return routines[quadrant(theta)](
-                start * MM,
-                end * MM,
+                start,
+                end,
                 sin(theta) + adjustment,
                 cos(theta) + adjustment)
 
