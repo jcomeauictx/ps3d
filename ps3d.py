@@ -303,8 +303,8 @@ def ps3d():
             routines = [quadrant0, quadrant1, quadrant2, quadrant3]
             adjustment = halfwidth * MM
             return routines[quadrant(theta)](
-                start,
-                end,
+                start * MM,
+                end * MM,
                 sin(theta) * adjustment,
                 cos(theta) * adjustment)
 
