@@ -4,6 +4,7 @@
 currentpagedevice /PageSize get dup 0 get exch 1 get exch  % width height
  2 div exch 2 div moveto
 .5 setgray
+3 setlinewidth
 10 10 rlineto stroke
 showpage
 % end program

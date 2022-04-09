@@ -216,8 +216,8 @@ def ps3d():
         '''
         path = DEVICE['Path']
         linewidth = DEVICE['LineWidth']
-        if linewidth < 3:
-            logging.warning('Width less than a millimeter, may not work')
+        if linewidth * MM < 1:
+            raise ValueError('Width less than a millimeter not likely to work')
         halfwidth = linewidth / 2
         logging.debug('half line width: %s mm', halfwidth)
         segments = []
@@ -310,8 +310,8 @@ def ps3d():
             return routines[quadrant(theta)](
                 start,
                 end,
-                sin(theta) + adjustment,
-                cos(theta) + adjustment)
+                sin(theta) * adjustment,
+                cos(theta) * adjustment)
 
         for index in range(len(path) - 1):
             segments.append(get_faces(path[index], path[index + 1]))
