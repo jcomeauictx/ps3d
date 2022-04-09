@@ -28,7 +28,7 @@ DEVICE = {
     'RGBColor': [0, 0, 0],  # black by default
     'Path': [],
 }
-MM = 25.4 / 72  # 1/72" ~= .3mm
+MM = 25.4 / 72  # 1/72" ~= .35mm
 PS3D = {}  # words of the language
 # Triplet: x, y, z values that can be used in arithmetic operations with scalars
 Triplet = namedtuple(
@@ -305,8 +305,8 @@ def ps3d():
             return routines[quadrant(theta)](
                 start * MM,
                 end * MM,
-                sin(theta) * adjustment,
-                cos(theta) * adjustment)
+                sin(theta) + adjustment,
+                cos(theta) + adjustment)
 
         for index in range(len(path) - 1):
             segments.append(get_faces(path[index], path[index + 1]))
