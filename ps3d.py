@@ -69,6 +69,7 @@ def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
         else:
             raise ValueError('valid input should start with "%!ps3d"')
     for line in infile:
+        print('# ps code:', line.rstrip(), file=OUTPUT.obj)
         process(line)
     infile.close()
     OUTPUT.obj.close()
@@ -155,7 +156,7 @@ def ps3d():
         STACK.append(STACK.pop() + STACK.pop())
 
     def _print():
-        logging.info('stdout: %s', STACK.pop())
+        print('# stdout:', STACK.pop(), file=OUTPUT.obj)
 
     def moveto():
         DEVICE['Path'][:] = []  # clear current path
