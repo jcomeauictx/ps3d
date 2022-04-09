@@ -22,10 +22,13 @@ GSTACK = []  # graphic state stack
 VERTICES = []
 FACES = []
 OUTPUT = type('Files', (), {'obj': None, 'mtl': None})()
+BLACK = [0, 0, 0]
+WHITE = [1, 1, 1]
+COLORS = [WHITE]
 DEVICE = {
     'PageSize': [0, 0],
     'LineWidth': 1,
-    'RGBColor': [0, 0, 0],  # black by default
+    'RGBColor': WHITE,  # black shows as white by default
     'Path': [],
 }
 MM = 25.4 / 72  # 1/72" ~= .35mm; in case we want to convert
@@ -58,9 +61,10 @@ def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
     print('# units are 1/72 inch, same as PostScript', file=OUTPUT.obj)
     print("# that's .013888 inches or .352777 mm", file=OUTPUT.obj)
     print('mtllib', os.path.basename(mtlfile), file=OUTPUT.obj)
-    print('usemtl mtl0', file=OUTPUT.obj)
     print('newmtl mtl0', file=OUTPUT.mtl)
     print('Kd 1 1 1', file=OUTPUT.mtl)  # black in postscript, white in 3D
+    print('g mtl0', file=OUTPUT.obj)
+    print('usemtl mtl0', file=OUTPUT.obj)
     PS3D.update(ps3d())
     shebang = next(infile)
     if not shebang.startswith('%!ps3d'):
@@ -159,7 +163,7 @@ def ps3d():
         print('# stdout:', STACK.pop(), file=OUTPUT.obj)
 
     def moveto():
-        DEVICE['Path'][:] = []  # clear current path
+        DEVICE['Path'] = []  # clear current path
         DEVICE['Path'].append(Triplet(
             STACK.pop(-2), STACK.pop(), 0, 'moveto'
         ))
@@ -191,13 +195,38 @@ def ps3d():
     def exch():
         STACK[-2], STACK[-1] = STACK[-1], STACK[-2]
 
-    def setrgbcolor():
-        DEVICE['RGBColor'] = [STACK.pop(-3), STACK.pop(-2), STACK.pop()]
-        logging.debug('color now: %s', DEVICE['RGBColor'])
+    def setrgbcolor(useblack=True):
+        '''
+        use white by default when called via `0 setgray`
 
-    def setgray():
+        easier to see problems with white items in MeshLab than with black
+        '''
+        color = [STACK.pop(-3), STACK.pop(-2), STACK.pop()]
+        if color == BLACK and not useblack:
+            color = WHITE
+        if color != DEVICE['RGBColor']:
+            DEVICE['RGBColor'] = color
+            logging.debug('color now: %s', DEVICE['RGBColor'])
+            if color in COLORS:
+                logging.debug('color %s already in COLORS: %s', color, COLORS)
+                group = 'mtl%d' % COLORS.index(color)
+            else:
+                group = 'mtl%d' % len(COLORS)
+                COLORS.append(color)
+                print('', file=OUTPUT.mtl)
+                print('newmtl', group, file=OUTPUT.mtl)
+                print('Kd', *color, file=OUTPUT.mtl)
+            print('g', group, file=OUTPUT.obj)
+            print('usemtl', group, file=OUTPUT.obj)
+        else:
+            logging.info('color was already %s', color)
+
+    def setgray(useblack=False):
+        if STACK[-1] == 0:
+            logging.warning('using white not black, see .obj file for details')
+            print('# use 0 0 0 setrgbcolor for black', file=OUTPUT.obj)
         STACK.extend([STACK.pop()] * 3)
-        setrgbcolor()
+        setrgbcolor(useblack)
 
     def gsave():
         GSTACK.append(deepcopy(DEVICE))
@@ -323,7 +352,7 @@ def ps3d():
             ])
         FACES.append(segments[-1]['end'])  # far end cap
 
-        DEVICE['Path'][:] = []  # clear path after stroke
+        DEVICE['Path'] = []  # clear path after stroke
 
     def showpage():
         for vertex in VERTICES:
