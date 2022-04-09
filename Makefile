@@ -23,8 +23,6 @@ test: $(TEST)
 view: sample/a_test.view
 %.ps: %.ps3d
 	-timeout $(GSTIME) gs $<
-%.ps: .FORCE
-	-timeout $(GSTIME) gs $@
 ps: test.ps
 clean:
 	rm -f *.obj *.mtl
