@@ -267,9 +267,10 @@ def ps3d():
             aft, starboard fore. those are the last to be printed, since the
             Z axis is "top". vertices 5 through 8 are in the same places on
             the hull. while enumerating the other faces, imagine the boat is
-            a perfect rectangle, the helm always remains upright, but the rest
-            of the boat rolls over to another face. so when the hull and deck
-            are swapped, the numbering becomes 8, 7, 6, 5.
+            a perfect cube, the helm always remains upright, but the rest
+            of the boat rolls or pitches over to another face.
+            so when, for example, the hull and deck are swapped, the
+            numbering becomes 8, 7, 6, 5.
 
             decided on this method after finding a relationship between the
             quadrant x and y signs and a counterclockwise order.
