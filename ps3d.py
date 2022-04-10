@@ -14,6 +14,7 @@ import sys, os, math, logging  # pylint: disable=multiple-imports
 from ast import literal_eval
 from copy import deepcopy
 from collections import namedtuple
+from datetime import datetime
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
@@ -58,6 +59,11 @@ def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
         infile = open(infile)
     OUTPUT.obj = open(objfile, 'w')
     OUTPUT.mtl = open(mtlfile, 'w')
+    print(
+        '# created %s from %s by %s' % (
+            datetime.now(), infile.name, sys.argv[0]
+        ), file=OUTPUT.obj
+    )
     print('# units are 1/72 inch, same as PostScript', file=OUTPUT.obj)
     print("# that's .013888 inches or .352777 mm", file=OUTPUT.obj)
     print('mtllib', os.path.basename(mtlfile), file=OUTPUT.obj)
