@@ -268,79 +268,6 @@ def ps3d():
         # the innermost loop creates the vertices.
         # vertices can and should be reused
         # should add a face to each end of the resulting path
-        def quadrant0(start, end, sin_offset, cos_offset):
-            '''
-            calculate faces for segment in quadrant 0
-
-            easier to think about what's going on by numbering vertices
-            starting from top left and going counterclockwise, regardless
-            of quadrant; which is why we need a separate routine for each,
-            because "top left" changes by quadrant.
-
-            these were all worked out by hand on graph paper...
-            '''
-            vertices = [get_vertex(point) for point in (
-                # creating the base (bottom), z=0
-                end + Triplet(-sin_offset, cos_offset),
-                start + Triplet(-sin_offset, cos_offset),
-                start + Triplet(sin_offset, -cos_offset),
-                end + Triplet(sin_offset, -cos_offset),
-                # on finishing the stroke (top), z>0
-                end + Triplet(-sin_offset, cos_offset, linewidth),
-                start + Triplet(-sin_offset, cos_offset, linewidth),
-                start + Triplet(sin_offset, -cos_offset, linewidth),
-                end + Triplet(sin_offset, -cos_offset, linewidth)
-            )]
-            logging.debug('vertices: %s', vertices)
-            faces = {
-                'top': (vertices[i - 1] + 1 for i in [5, 6, 7, 8]),
-                'bottom': (vertices[i - 1] + 1 for i in [4, 3, 2, 1]),
-                'left': (vertices[i - 1] + 1 for i in [2, 6, 5, 1]),
-                'right': (vertices[i - 1] + 1 for i in [8, 7, 3, 4]),
-                'start': (vertices[i - 1] + 1 for i in [2, 3, 7, 6]),
-                'end': (vertices[i - 1] + 1 for i in [4, 8, 5, 1]),
-            }
-            return faces
-
-        def quadrant1():
-            pass
-
-        def quadrant2():
-            pass
-
-        def quadrant3(start, end, sin_offset, cos_offset):
-            '''
-            calculate faces for segment in quadrant 0
-
-            easier to think about what's going on by numbering vertices
-            starting from top left and going counterclockwise, regardless
-            of quadrant; which is why we need a separate routine for each,
-            because "top left" changes by quadrant.
-
-            these were all worked out by hand on graph paper...
-            '''
-            vertices = [get_vertex(point) for point in (
-                # creating the base (bottom), z=0
-                start + Triplet(sin_offset, cos_offset),
-                start + Triplet(-sin_offset, -cos_offset),
-                end + Triplet(-sin_offset, -cos_offset),
-                end + Triplet(sin_offset, cos_offset),
-                # on finishing the stroke (top), z>0
-                start + Triplet(sin_offset, cos_offset, linewidth),
-                start + Triplet(-sin_offset, -cos_offset, linewidth),
-                end + Triplet(-sin_offset, -cos_offset, linewidth),
-                end + Triplet(sin_offset, cos_offset, linewidth)
-            )]
-            logging.debug('vertices: %s', vertices)
-            faces = {
-                'top': (vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
-                'bottom': (vertices[i - 1] + 1 for i in [1, 2, 3, 4]),
-                'left': (vertices[i - 1] + 1 for i in [4, 8, 5, 1]),
-                'right': (vertices[i - 1] + 1 for i in [2, 6, 7, 3]),
-                'start': (vertices[i - 1] + 1 for i in [1, 5, 6, 2]),
-                'end': (vertices[i - 1] + 1 for i in [3, 7, 8, 4]),
-            }
-            return faces
 
         def get_faces(start, end):
             '''
@@ -350,46 +277,44 @@ def ps3d():
             the vertices are numbered counterclockwise: port aft, starboard
             aft, starboard fore. those are the last to be printed, since the
             Z axis is "top". vertices 5 through 8 are in the same places on
-            the hull.
+            the hull. while enumerating the other faces, imagine the boat is
+            a perfect rectangle, the helm always remains upright, but the rest
+            of the boat rolls over to another face. so when the hull and deck
+            are swapped, the numbering becomes 8, 7, 6, 5.
 
             decided on this method after finding a relationship between the
             quadrant x and y signs and a counterclockwise order.
+
+            oddly enough, the x adjustment uses the y sign, and vice versa.
             '''
             theta = atan2(start, end)
             logging.debug('stroking between %s and %s, angle %s degrees',
                           path[index], path[index + 1], theta)
             xsign, ysign = QUADRANTS[quadrant(theta)]
             logging.debug('xsign %d, ysign %d', xsign, ysign)
-            routines = [quadrant0, quadrant1, quadrant2, quadrant3]
             adjustment = halfwidth
-            return routines[quadrant(theta)](
-                start,
-                end,
-                sin(theta) * adjustment,
-                cos(theta) * adjustment)
-            '''
+            sin_offset = sin(theta) * ysign * adjustment
+            cos_offset = cos(theta) * xsign * adjustment
             vertices = [get_vertex(point) for point in (
-                # creating the base (bottom), z=0
-                start + Triplet(sin_offset, cos_offset),
-                start + Triplet(-sin_offset, -cos_offset),
-                end + Triplet(-sin_offset, -cos_offset),
-                end + Triplet(sin_offset, cos_offset),
-                # on finishing the stroke (top), z>0
-                start + Triplet(sin_offset, cos_offset, linewidth),
-                start + Triplet(-sin_offset, -cos_offset, linewidth),
-                end + Triplet(-sin_offset, -cos_offset, linewidth),
-                end + Triplet(sin_offset, cos_offset, linewidth)
+                end + Triplet(-sin_offset, cos_offset, linewidth),
+                start + Triplet(-sin_offset, cos_offset, linewidth),
+                start + Triplet(sin_offset, -cos_offset, linewidth),
+                end + Triplet(sin_offset, -cos_offset, linewidth),
+                end + Triplet(-sin_offset, cos_offset),
+                start + Triplet(-sin_offset, cos_offset),
+                start + Triplet(sin_offset, -cos_offset),
+                end + Triplet(sin_offset, -cos_offset)
             )]
             logging.debug('vertices: %s', vertices)
             faces = {
-                'top': (vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
-                'bottom': (vertices[i - 1] + 1 for i in [1, 2, 3, 4]),
+                'top': (vertices[i - 1] + 1 for i in [1, 2, 3, 4]),
+                'bottom': (vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
                 'left': (vertices[i - 1] + 1 for i in [4, 8, 5, 1]),
                 'right': (vertices[i - 1] + 1 for i in [2, 6, 7, 3]),
                 'start': (vertices[i - 1] + 1 for i in [1, 5, 6, 2]),
                 'end': (vertices[i - 1] + 1 for i in [3, 7, 8, 4]),
             }
-            '''
+            return faces
 
         for index in range(len(path) - 1):
             segments.append(get_faces(path[index], path[index + 1]))
