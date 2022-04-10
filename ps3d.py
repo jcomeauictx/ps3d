@@ -128,16 +128,6 @@ def cos(theta):
     '''
     return math.cos(math.radians(theta))
 
-def get_quadrant(theta):
-    '''
-    return Cartesian quadrant for angle
-
-    this is slightly modified, because I'm using "upper left" for the start
-    of drawing, which means 0 degrees should be quadrant 3, 90 degrees should
-    be quadrant 1, etc.
-    '''
-    return int((theta - sys.float_info.min) // 90)
-
 def get_vertex(point):
     '''
     return index into VERTICES for given point
@@ -271,17 +261,10 @@ def ps3d():
             of the boat rolls or pitches over to another face.
             so when, for example, the hull and deck are swapped, the
             numbering becomes 8, 7, 6, 5.
-
-            decided on this method after finding a relationship between the
-            quadrant x and y signs and a counterclockwise order.
-
-            oddly enough, the x adjustment uses the y sign, and vice versa.
             '''
             theta = atan2(start, end)
             logging.debug('stroking between %s and %s, angle %s degrees',
                           path[index], path[index + 1], theta)
-            quadrant = get_quadrant(theta)
-            logging.debug('quadrant: %s', quadrant)
             adjustment = halfwidth
             sin_offset = sin(theta) * adjustment
             cos_offset = cos(theta) * adjustment
