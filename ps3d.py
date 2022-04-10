@@ -139,7 +139,7 @@ def cos(theta):
     '''
     return math.cos(math.radians(theta))
 
-def quadrant(theta):
+def get_quadrant(theta):
     '''
     return Cartesian quadrant for angle
 
@@ -290,7 +290,9 @@ def ps3d():
             theta = atan2(start, end)
             logging.debug('stroking between %s and %s, angle %s degrees',
                           path[index], path[index + 1], theta)
-            xsign, ysign = QUADRANTS[quadrant(theta)]
+            quadrant = get_quadrant(theta)
+            logging.debug('quadrant: %s', quadrant)
+            xsign, ysign = QUADRANTS[quadrant]
             logging.debug('xsign %d, ysign %d', xsign, ysign)
             adjustment = halfwidth
             sin_offset = sin(theta) * ysign * adjustment
