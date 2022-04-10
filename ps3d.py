@@ -295,8 +295,8 @@ def ps3d():
             xsign, ysign = QUADRANTS[quadrant]
             logging.debug('xsign %d, ysign %d', xsign, ysign)
             adjustment = halfwidth
-            sin_offset = sin(theta) * ysign * adjustment
-            cos_offset = cos(theta) * xsign * adjustment
+            sin_offset = sin(theta) * adjustment
+            cos_offset = cos(theta) * adjustment
             vertices = [get_vertex(point) for point in (
                 end + Triplet(-sin_offset, cos_offset, linewidth),
                 start + Triplet(-sin_offset, cos_offset, linewidth),
