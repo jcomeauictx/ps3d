@@ -50,6 +50,17 @@ Triplet.__mul__ = lambda self, other: Triplet(  # only scalar
 # check equality only for x, y, z
 Triplet.__eq__ = lambda self, other: self[:3] == other[:3]
 
+Quadrant = namedtuple(
+    'Quadrant',
+    ('xsign', 'ysign')
+)
+QUADRANTS = {
+    0: Quadrant(+1, +1),
+    1: Quadrant(-1, +1),
+    2: Quadrant(-1, -1),
+    3: Quadrant(+1, -1)
+}
+
 def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
     '''
     convert .ps3d file to .obj format
