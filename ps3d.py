@@ -71,7 +71,7 @@ def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
         if shebang.startswith('%!ps'):
             logging.warning('plain postscript (not ps3d) file!')
         else:
-            raise ValueError('valid input should start with "%!ps3d"')
+            raise ValueError('Valid input should start with "%!ps3d"')
     for line in infile:
         print('# ps code:', line.rstrip(), file=OUTPUT.obj)
         process(line)
@@ -103,7 +103,7 @@ def process(line):
             try:
                 STACK.append(literal_eval(token))
             except ValueError as bad:
-                raise ValueError('unknown value ' + token) from bad
+                raise ValueError('Unknown value ' + token) from bad
         logging.debug('STACK: %s', STACK)
 
 def atan2(point0, point1):
