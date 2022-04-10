@@ -7,6 +7,6 @@ currentpagedevice /PageSize get dup 0 get exch 1 get exch  % width height
 3 setlinewidth  % wider than 1mm
 -10 10 rlineto
 0 1 0 setrgbcolor  % color to green
-0 -5 rlineto stroke
+-5 -5 rlineto stroke
 showpage
 % end program
