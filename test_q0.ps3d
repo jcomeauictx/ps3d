@@ -1,12 +1,10 @@
 %!ps3d test program
-1 1 add =  % that was just a test
 % move to center of page for testing with ghostscript
 currentpagedevice /PageSize get dup 0 get exch 1 get exch  % width height
  2 div exch 2 div moveto
-1 0 0 setrgbcolor  % color to red
 3 setlinewidth  % wider than 1mm
--10 10 rlineto
-0 1 0 setrgbcolor  % color to green
--5 -5 rlineto stroke
+10 10 rlineto
+1 0 0 setrgbcolor  % color to red
+stroke
 showpage
 % end program
