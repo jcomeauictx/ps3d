@@ -1,2 +1,3 @@
-%!ps should show warning
+%!ps should show warning about shebang line
+0 setgray  % should show warning about being white not black
 1 1 rlineto  % should die with `no current point` error
