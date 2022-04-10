@@ -17,7 +17,7 @@ test: $(TEST)
 %.doctest: %.py
 	$(PYTHON) -m doctest $<
 %.mtl %.obj: ps3d.py %.ps3d
-	./$+ $(@:.mtl=.obj) $(@:.obj=.mtl)
+	./$+ $(@:.mtl=.obj) $(@:.obj=.mtl) 2>&1 | tee $(@:.obj=.log)
 %.view: %.obj
 	-cd $(<D) && timeout $(MLTIME) meshlab $(<F)
 view: sample/a_test.view
@@ -25,6 +25,6 @@ view: sample/a_test.view
 	-timeout $(GSTIME) gs $<
 ps: test.ps
 clean:
-	rm -f *.obj *.mtl
+	rm -f *.obj *.mtl *.log
 .PRECIOUS: %.obj %.mtl
 .FORCE:
