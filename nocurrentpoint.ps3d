@@ -1,0 +1,2 @@
+%!ps should show warning
+1 1 rlineto  % should die with `no current point` error

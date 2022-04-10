@@ -1,0 +1,2 @@
+%!ps3d
+1 2 3 4 nosuchoperation  % should die with unknown value error
