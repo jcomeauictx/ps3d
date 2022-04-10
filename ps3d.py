@@ -343,9 +343,23 @@ def ps3d():
             return faces
 
         def get_faces(start, end):
+            '''
+            think of the segment as a ship going from start to end
+
+            you're the captain, steering, and "top left" is the port foredeck.
+            the vertices are numbered counterclockwise: port aft, starboard
+            aft, starboard fore. those are the last to be printed, since the
+            Z axis is "top". vertices 5 through 8 are in the same places on
+            the hull.
+
+            decided on this method after finding a relationship between the
+            quadrant x and y signs and a counterclockwise order.
+            '''
             theta = atan2(start, end)
             logging.debug('stroking between %s and %s, angle %s degrees',
                           path[index], path[index + 1], theta)
+            xsign, ysign = QUADRANTS[quadrant(theta)]
+            logging.debug('xsign %d, ysign %d', xsign, ysign)
             routines = [quadrant0, quadrant1, quadrant2, quadrant3]
             adjustment = halfwidth
             return routines[quadrant(theta)](
@@ -353,6 +367,29 @@ def ps3d():
                 end,
                 sin(theta) * adjustment,
                 cos(theta) * adjustment)
+            '''
+            vertices = [get_vertex(point) for point in (
+                # creating the base (bottom), z=0
+                start + Triplet(sin_offset, cos_offset),
+                start + Triplet(-sin_offset, -cos_offset),
+                end + Triplet(-sin_offset, -cos_offset),
+                end + Triplet(sin_offset, cos_offset),
+                # on finishing the stroke (top), z>0
+                start + Triplet(sin_offset, cos_offset, linewidth),
+                start + Triplet(-sin_offset, -cos_offset, linewidth),
+                end + Triplet(-sin_offset, -cos_offset, linewidth),
+                end + Triplet(sin_offset, cos_offset, linewidth)
+            )]
+            logging.debug('vertices: %s', vertices)
+            faces = {
+                'top': (vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
+                'bottom': (vertices[i - 1] + 1 for i in [1, 2, 3, 4]),
+                'left': (vertices[i - 1] + 1 for i in [4, 8, 5, 1]),
+                'right': (vertices[i - 1] + 1 for i in [2, 6, 7, 3]),
+                'start': (vertices[i - 1] + 1 for i in [1, 5, 6, 2]),
+                'end': (vertices[i - 1] + 1 for i in [3, 7, 8, 4]),
+            }
+            '''
 
         for index in range(len(path) - 1):
             segments.append(get_faces(path[index], path[index + 1]))
