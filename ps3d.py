@@ -148,6 +148,22 @@ def get_vertex(point):
         VERTICES.append(point)
         return len(VERTICES) - 1
 
+def outer_join(index, segments):
+    '''
+    make a seamless join where two segments meet
+    '''
+    get_x = lambda top, index: VERTICES[top[index]].x
+    get_y = lambda top, index: VERTICES[top[index]].y
+    outer_lines = [
+        [(get_x(top, 1), get_y(top, 1)), (get_x(top, 0), get_y(top, 0))]
+        for top in (segments[index]['top'], segments[index - 1]['top'])
+    ]
+    logging.debug('outer lines: %s', outer_lines)
+    segment_top = segments[index]['top']
+    #previous = segments[index - 1]['top']
+    outer_top = VERTICES[segment_top[0]].x, VERTICES[segment_top[0]].y
+    logging.debug('joining (%.3f, %.3f)', *outer_top)
+
 def ps3d():
     '''
     words which define the ps3d language
@@ -308,11 +324,8 @@ def ps3d():
 
         # now join the segments seamlessly
 
-        for segment in segments:
-            logging.debug(
-                'segment top: %s',
-                [{v: VERTICES[v - 1]} for v in segment['top']]
-            )
+        for index in range(1, len(segments)):
+            outer_join(index, segments)
 
         DEVICE['Path'] = []  # clear path after stroke
 
