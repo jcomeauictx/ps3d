@@ -156,10 +156,32 @@ def outer_join(index, segments):
     get_y = lambda top, index: VERTICES[top[index] - 1].y
     logging.debug('outer_join: segments: %s', segments)
     outer_lines = [
-        [(get_x(top, 1), get_y(top, 1)), (get_x(top, 0), get_y(top, 0))]
+        [Triplet(get_x(top, 1), get_y(top, 1)),
+         Triplet(get_x(top, 0), get_y(top, 0))]
         for top in (segments[index]['top'], segments[index - 1]['top'])
     ]
     logging.debug('joining outer lines: %s', outer_lines)
+    formulas = [line_formula(*line) for line in outer_lines]
+    logging.debug('formulas: %s', formulas)
+
+def line_formula(start, end):
+    '''
+    calculate formula `y = mx + c` for line from two points
+
+    where m = delta y divided by delta x. if delta x is zero, it's a vertical
+    line, so simply return the formula `x = c`.
+    '''
+    delta_y = end.y - start.y
+    delta_x = end.x - start.x
+    if delta_x == 0:
+        formula = {'x': start.x}
+    else:
+        formula = {'m': delta_y / delta_x}
+        # now calculate c using either point
+        formula['c'] = start.y - formula['m'] * start.x
+    logging.debug('delta_x: %s, delta_y: %s, formula: %s',
+                  delta_x, delta_y, formula)
+    return formula
 
 def ps3d():
     '''
