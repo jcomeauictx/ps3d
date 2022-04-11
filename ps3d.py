@@ -152,17 +152,14 @@ def outer_join(index, segments):
     '''
     make a seamless join where two segments meet
     '''
-    get_x = lambda top, index: VERTICES[top[index]].x
-    get_y = lambda top, index: VERTICES[top[index]].y
+    get_x = lambda top, index: VERTICES[top[index] - 1].x
+    get_y = lambda top, index: VERTICES[top[index] - 1].y
+    logging.debug('outer_join: segments: %s', segments)
     outer_lines = [
         [(get_x(top, 1), get_y(top, 1)), (get_x(top, 0), get_y(top, 0))]
         for top in (segments[index]['top'], segments[index - 1]['top'])
     ]
-    logging.debug('outer lines: %s', outer_lines)
-    segment_top = segments[index]['top']
-    #previous = segments[index - 1]['top']
-    outer_top = VERTICES[segment_top[0]].x, VERTICES[segment_top[0]].y
-    logging.debug('joining (%.3f, %.3f)', *outer_top)
+    logging.debug('joining outer lines: %s', outer_lines)
 
 def ps3d():
     '''
