@@ -5,7 +5,9 @@ Prototype of a 3D extension of postscript
 Produces .obj files for 3d printing
 
 Some notes:
-    Z axis points towards viewer, -Z points away.
+    Z axis points towards viewer, -Z points away; what gets printed last
+    is "top".
+
     Vertices can be created in any order, *but* faces must enumerate them
     in counterclockwise order; otherwise they will appear backwards (dark side
     to viewer) or broken (if neither CW nor CCW).
@@ -261,10 +263,10 @@ def ps3d():
             you're the captain, steering, and "top left" is the port foredeck.
             the vertices are numbered counterclockwise: port aft, starboard
             aft, starboard fore. those are the last to be printed, since the
-            Z axis is "top". vertices 5 through 8 are in the same places on
-            the hull. while enumerating the other faces, imagine the boat is
-            a perfect cube, the helm always remains upright, but the rest
-            of the boat rolls or pitches over to another face.
+            Z axis is "top". vertices 5 through 8 are in the corresponding
+            places on the hull below. while enumerating the other faces,
+            imagine the boat is roughly cubic, the helm always remains upright,
+            but the rest of the boat rolls or pitches over to another face.
             so when, for example, the hull and deck are swapped, the
             numbering becomes 8, 7, 6, 5.
             '''
@@ -307,7 +309,10 @@ def ps3d():
         # now join the segments seamlessly
 
         for segment in segments:
-            logging.debug('segment: %s', segment)
+            logging.debug(
+                'segment top: %s',
+                [{v: VERTICES[v - 1]} for v in segment['top']]
+            )
 
         DEVICE['Path'] = []  # clear path after stroke
 
