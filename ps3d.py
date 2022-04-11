@@ -286,12 +286,12 @@ def ps3d():
             )]
             logging.debug('vertices: %s', vertices)
             faces = {
-                'top': (vertices[i - 1] + 1 for i in [1, 2, 3, 4]),
-                'bottom': (vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
-                'left': (vertices[i - 1] + 1 for i in [5, 6, 2, 1]),
-                'right': (vertices[i - 1] + 1 for i in [4, 3, 7, 8]),
-                'start': (vertices[i - 1] + 1 for i in [2, 6, 7, 3]),
-                'end': (vertices[i - 1] + 1 for i in [5, 1, 4, 8]),
+                'top': list(vertices[i - 1] + 1 for i in [1, 2, 3, 4]),
+                'bottom': list(vertices[i - 1] + 1 for i in [8, 7, 6, 5]),
+                'left': list(vertices[i - 1] + 1 for i in [5, 6, 2, 1]),
+                'right': list(vertices[i - 1] + 1 for i in [4, 3, 7, 8]),
+                'start': list(vertices[i - 1] + 1 for i in [2, 6, 7, 3]),
+                'end': list(vertices[i - 1] + 1 for i in [5, 1, 4, 8]),
             }
             return faces
 
@@ -303,6 +303,11 @@ def ps3d():
                 segment[k] for k in ('top', 'left', 'bottom', 'right')
             ])
         FACES.append(segments[-1]['end'])  # far end cap
+
+        # now join the segments seamlessly
+
+        for segment in segments:
+            logging.debug('segment: %s', segment)
 
         DEVICE['Path'] = []  # clear path after stroke
 
