@@ -163,9 +163,13 @@ def outer_join(index, segments):
     if the angle is less than 180 degrees, 'outer' will be 'port' side in
     the "ship" analogy, otherwise 'starboard'
     '''
+    def get(top, vertex):
+        index1 = top[vertex]
+        triplet = VERTEX[index1 - 1]
+        return triplet._replace(type=index1 - 1)
+    #get = lambda top, vertex: VERTEX[top[vertex] - 1]
     #leading = segments[index]['top'][1] - 1
     #trailing = segments[index - 1]['top'][0] - 1
-    get = lambda top, vertex: VERTEX[top[vertex] - 1]
     #logging.debug('outer_join: segments: %s, %s', leading, trailing)
     outer_lines = [
         [get(top, 1), get(top, 0)]
