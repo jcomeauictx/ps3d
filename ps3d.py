@@ -152,18 +152,19 @@ def outer_join(index, segments):
     '''
     make a seamless join where two segments meet
     '''
-    get_x = lambda top, index: VERTICES[top[index] - 1].x
-    get_y = lambda top, index: VERTICES[top[index] - 1].y
+    get = lambda top, vertex: VERTICES[top[vertex] - 1]
     logging.debug('outer_join: segments: %s', segments)
     outer_lines = [
-        [Triplet(get_x(top, 1), get_y(top, 1)),
-         Triplet(get_x(top, 0), get_y(top, 0))]
+        [get(top, 1), get(top, 0)]
         for top in (segments[index]['top'], segments[index - 1]['top'])
     ]
     logging.debug('joining outer lines: %s', outer_lines)
     formulas = [line_formula(*line) for line in outer_lines]
     logging.debug('formulas: %s', formulas)
-    logging.debug('intersection: %s', intersection(*formulas))
+    new_point = intersection(*formulas)
+    logging.debug('intersection: %s', new_point)
+    # port forward of the first segment, and aft rear of second, now
+    # become the point of intersection
 
 def line_formula(start, end):
     '''
