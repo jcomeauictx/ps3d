@@ -163,6 +163,7 @@ def outer_join(index, segments):
     logging.debug('joining outer lines: %s', outer_lines)
     formulas = [line_formula(*line) for line in outer_lines]
     logging.debug('formulas: %s', formulas)
+    logging.debug('intersection: %s', intersection(*formulas))
 
 def line_formula(start, end):
     '''
@@ -182,6 +183,30 @@ def line_formula(start, end):
     logging.debug('delta_x: %s, delta_y: %s, formula: %s',
                   delta_x, delta_y, formula)
     return formula
+
+def intersection(line0, line1):
+    '''
+    calculate intersection of two lines, given their formulas
+
+    this assumes that the lines are different and that they do
+    indeed intersect; it is meant for purposes of this program and
+    not as a general solution.
+
+    for example, line0: m = 1, c = 0 and line1: m = -1, c = -5
+    putting the slopes on one side and the constants on the other, you get
+    2x = -5, yielding x = -2.5, and thus y by the first formula,
+    1 * -2.5 + 0, is also -2.5.
+    '''
+    if 'm' in line0 and 'm' in line1:
+        # put the `mx`s on one side of the equation and `c`s on the other
+        # then divide by the x multiplier, leaving x
+        x_value = line0['c'] - line1['c'] / (line0['m'] - line1['m'])
+    elif 'x' in line0:
+        line0, line1 = line1, line0  # swap them
+        x_value = line1['x']
+    y_value = line0['m'] * x_value + line0['c']
+    logging.debug('intersection: (%.3f, %.3f)', x_value, y_value)
+    return Triplet(x_value, y_value)
 
 def ps3d():
     '''
