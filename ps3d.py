@@ -22,12 +22,12 @@ logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
 STACK = []
 GSTACK = []  # graphic state stack
-VERTICES = []
-FACES = []
+VERTEX = []
+FACE = []
 OUTPUT = type('Files', (), {'obj': None, 'mtl': None})()
 BLACK = [0, 0, 0]
 WHITE = [1, 1, 1]
-COLORS = [WHITE]
+COLOR = [WHITE]
 DEVICE = {
     'PageSize': [0, 0],
     'LineWidth': 1,
@@ -138,15 +138,15 @@ def cos(theta):
 
 def get_vertex(point):
     '''
-    return index into VERTICES for given point
+    return index into VERTEX for given point
 
     must be 1-based to use in face ('f') statement
     '''
     try:
-        return VERTICES.index(point)
+        return VERTEX.index(point)
     except ValueError:
-        VERTICES.append(point)
-        return len(VERTICES) - 1
+        VERTEX.append(point)
+        return len(VERTEX) - 1
 
 def outer_join(index, segments):
     '''
@@ -155,8 +155,8 @@ def outer_join(index, segments):
     this is a bit complicated. remember:
     `segments` is a list of line segments forming a path: [SEG, SEG, ...]
     each SEG is a dict: {'top': [V, V, V, V], 'bottom': [V, V, V, V], ...}
-    each V is a 1-based index into VERTICES
-    VERTICES[V - 1] is a Triplet of (x, y, z)
+    each V is a 1-based index into VERTEX
+    VERTEX[V - 1] is a Triplet of (x, y, z)
     first, we want to determine the intersection of the outer lines of
     each segment, then modify those vertices to the intersection point.
     then do the same with the inner lines.
@@ -165,7 +165,7 @@ def outer_join(index, segments):
     '''
     #leading = segments[index]['top'][1] - 1
     #trailing = segments[index - 1]['top'][0] - 1
-    get = lambda top, vertex: VERTICES[top[vertex] - 1]
+    get = lambda top, vertex: VERTEX[top[vertex] - 1]
     #logging.debug('outer_join: segments: %s, %s', leading, trailing)
     outer_lines = [
         [get(top, 1), get(top, 0)]
@@ -173,7 +173,7 @@ def outer_join(index, segments):
     ]
     logging.debug('joining outer lines: %s', outer_lines)
     new_point = intersection(*[line_formula(*line) for line in outer_lines])
-    #new_point = intersection(line_formula(VERTICES[leading], line_formula(VERTICES[trailing])
+    #new_point = intersection(line_formula(VERTEX[leading], line_formula(VERTEX[trailing])
     logging.debug('intersection: %s', new_point)
     # port bow of the first segment, and port quarter of second, now
     # become the point of intersection
@@ -278,12 +278,12 @@ def ps3d():
         if color != DEVICE['RGBColor']:
             DEVICE['RGBColor'] = color
             logging.debug('color now: %s', DEVICE['RGBColor'])
-            if color in COLORS:
-                logging.debug('color %s already in COLORS: %s', color, COLORS)
-                group = 'mtl%d' % COLORS.index(color)
+            if color in COLOR:
+                logging.debug('color %s already in COLOR: %s', color, COLOR)
+                group = 'mtl%d' % COLOR.index(color)
             else:
-                group = 'mtl%d' % len(COLORS)
-                COLORS.append(color)
+                group = 'mtl%d' % len(COLOR)
+                COLOR.append(color)
                 print('', file=OUTPUT.mtl)
                 print('newmtl', group, file=OUTPUT.mtl)
                 print('Kd', *color, file=OUTPUT.mtl)
@@ -372,12 +372,12 @@ def ps3d():
 
         for index in range(len(path) - 1):
             segments.append(get_faces(path[index], path[index + 1]))
-        FACES.append(segments[0]['start'])  # near end cap
+        FACE.append(segments[0]['start'])  # near end cap
         for segment in segments:
-            FACES.extend([
+            FACE.extend([
                 segment[k] for k in ('top', 'left', 'bottom', 'right')
             ])
-        FACES.append(segments[-1]['end'])  # far end cap
+        FACE.append(segments[-1]['end'])  # far end cap
 
         # now join the segments seamlessly
 
@@ -387,9 +387,9 @@ def ps3d():
         DEVICE['Path'] = []  # clear path after stroke
 
     def showpage():
-        for vertex in VERTICES:
+        for vertex in VERTEX:
             print('v %f %f %f' % vertex[:3], file=OUTPUT.obj)
-        for face in FACES:
+        for face in FACE:
             print('f', *face, file=OUTPUT.obj)
 
     words = locals()
