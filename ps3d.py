@@ -151,15 +151,29 @@ def get_vertex(point):
 def outer_join(index, segments):
     '''
     make a seamless join where two segments meet
+
+    this is a bit complicated. remember:
+    `segments` is a list of line segments forming a path: [SEG, SEG, ...]
+    each SEG is a dict: {'top': [V, V, V, V], 'bottom': [V, V, V, V], ...}
+    each V is a 1-based index into VERTICES
+    VERTICES[V - 1] is a Triplet of (x, y, z)
+    first, we want to determine the intersection of the outer lines of
+    each segment, then modify those vertices to the intersection point.
+    then do the same with the inner lines.
+    if the angle is less than 180 degrees, 'outer' will be 'port' side in
+    the "ship" analogy, otherwise 'starboard'
     '''
+    #leading = segments[index]['top'][1] - 1
+    #trailing = segments[index - 1]['top'][0] - 1
     get = lambda top, vertex: VERTICES[top[vertex] - 1]
-    logging.debug('outer_join: segments: %s', segments)
+    #logging.debug('outer_join: segments: %s, %s', leading, trailing)
     outer_lines = [
         [get(top, 1), get(top, 0)]
         for top in (segments[index]['top'], segments[index - 1]['top'])
     ]
     logging.debug('joining outer lines: %s', outer_lines)
     new_point = intersection(*[line_formula(*line) for line in outer_lines])
+    #new_point = intersection(line_formula(VERTICES[leading], line_formula(VERTICES[trailing])
     logging.debug('intersection: %s', new_point)
     # port forward of the first segment, and aft rear of second, now
     # become the point of intersection
