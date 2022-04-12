@@ -175,7 +175,7 @@ def outer_join(index, segments):
     new_point = intersection(*[line_formula(*line) for line in outer_lines])
     #new_point = intersection(line_formula(VERTICES[leading], line_formula(VERTICES[trailing])
     logging.debug('intersection: %s', new_point)
-    # port forward of the first segment, and aft rear of second, now
+    # port bow of the first segment, and port quarter of second, now
     # become the point of intersection
 
 def line_formula(start, end):
@@ -333,9 +333,9 @@ def ps3d():
             '''
             think of the segment as a ship going from start to end
 
-            you're the captain, steering, and "top left" is the port foredeck.
-            the vertices are numbered counterclockwise: port aft, starboard
-            aft, starboard fore. those are the last to be printed, since the
+            you're the captain, steering, and "top left" is the port bow.
+            the vertices are numbered counterclockwise: port quarter, starboard
+            quarter, starboard bow. those are the last to be printed, since the
             Z axis is "top". vertices 5 through 8 are in the corresponding
             places on the hull below. while enumerating the other faces,
             imagine the boat is roughly cubic, the helm always remains upright,
