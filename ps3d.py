@@ -159,9 +159,7 @@ def outer_join(index, segments):
         for top in (segments[index]['top'], segments[index - 1]['top'])
     ]
     logging.debug('joining outer lines: %s', outer_lines)
-    formulas = [line_formula(*line) for line in outer_lines]
-    logging.debug('formulas: %s', formulas)
-    new_point = intersection(*formulas)
+    new_point = intersection(*[line_formula(*line) for line in outer_lines])
     logging.debug('intersection: %s', new_point)
     # port forward of the first segment, and aft rear of second, now
     # become the point of intersection
