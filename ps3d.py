@@ -168,11 +168,6 @@ def outer_join(index, segments):
     if the angle is less than 180 degrees, 'outer' will be 'port' side in
     the "ship" analogy, otherwise 'starboard'
     '''
-    def get(top, vertex):
-        index1 = top[vertex]
-        triplet = VERTEX[index1 - 1]
-        return triplet._replace(type=index1 - 1)
-    #get = lambda top, vertex: VERTEX[top[vertex] - 1]
     leading = [
         Vertex(*VERTEX[segments[index]['top'][1] - 1]),
         Vertex(*VERTEX[segments[index]['top'][0] - 1])
@@ -182,13 +177,8 @@ def outer_join(index, segments):
         Vertex(*VERTEX[segments[index - 1]['top'][0] - 1])
     ]
     logging.debug('outer_join: segments: %s, %s', leading, trailing)
-    outer_lines = [
-        [get(top, 1), get(top, 0)]
-        for top in (segments[index]['top'], segments[index - 1]['top'])
-    ]
-    logging.debug('joining outer lines: %s', outer_lines)
-    new_point = intersection(*[line_formula(*line) for line in [leading, trailing]])
-    #new_point = intersection(line_formula(VERTEX[leading], line_formula(VERTEX[trailing])
+    new_point = intersection(*[line_formula(*line)
+                               for line in [leading, trailing]])
     logging.debug('intersection: %s', new_point)
     # port bow of the first segment, and port quarter of second, now
     # become the point of intersection
