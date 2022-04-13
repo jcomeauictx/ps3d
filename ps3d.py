@@ -153,7 +153,7 @@ def get_vertex(point):
         VERTEX.append(point)
         return len(VERTEX) - 1
 
-def outer_join(index, segments):
+def join(index, segments):
     '''
     make a seamless join where two segments meet
 
@@ -168,34 +168,35 @@ def outer_join(index, segments):
     if the angle is less than 180 degrees, 'outer' will be 'port' side in
     the "ship" analogy, otherwise 'starboard'
     '''
-    leading = [
+    outer_leading = [
         Vertex(*VERTEX[segments[index]['top'][1] - 1]),
         Vertex(*VERTEX[segments[index]['top'][0] - 1])
     ]
-    trailing = [
+    outer_trailing = [
         Vertex(*VERTEX[segments[index - 1]['top'][1] - 1]),
         Vertex(*VERTEX[segments[index - 1]['top'][0] - 1])
     ]
-    logging.debug('outer_join: segments: %s, %s', leading, trailing)
-    new_point = intersection(*[line_formula(*line)
-                               for line in [leading, trailing]])
+    logging.debug('join: segments: %s, %s', outer_leading, outer_trailing)
+    new_point = intersection(
+        *[line_formula(*line)
+          for line in [outer_leading, outer_trailing]])
     logging.debug('intersection: %s', new_point)
     # port bow of the first segment, and port quarter of second, now
     # become the point of intersection
     # pylint: disable=invalid-sequence-index  # get rid of bogus lint error
-    vertex = trailing[1].index
-    replacement = VERTEX[vertex] = trailing[1]._replace(
+    vertex = outer_trailing[1].index
+    replacement = VERTEX[vertex] = outer_trailing[1]._replace(
         x=new_point.x, y=new_point.y)
-    trailing[1] = replacement
-    logging.debug('trailing now: %s', trailing)
+    outer_trailing[1] = replacement
+    logging.debug('outer_trailing now: %s', outer_trailing)
     # now for the hull below; assume index is at offset 4
     VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
         x=new_point.x, y=new_point.y)
     # now also correct port quarter of leading segment, deck and hull below
-    vertex = leading[0].index
-    replacement = VERTEX[vertex] = leading[0]._replace(
+    vertex = outer_leading[0].index
+    replacement = VERTEX[vertex] = outer_leading[0]._replace(
         x=new_point.x, y=new_point.y)
-    leading[0] = replacement
+    outer_leading[0] = replacement
     VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
         x=new_point.x, y=new_point.y)
 
@@ -403,7 +404,7 @@ def ps3d():
         # now join the segments seamlessly
 
         for index in range(1, len(segments)):
-            outer_join(index, segments)
+            join(index, segments)
 
         DEVICE['Path'] = []  # clear path after stroke
 
