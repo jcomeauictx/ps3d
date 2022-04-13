@@ -182,6 +182,9 @@ def outer_join(index, segments):
     logging.debug('intersection: %s', new_point)
     # port bow of the first segment, and port quarter of second, now
     # become the point of intersection
+    # pylint: disable=invalid-sequence-index  # get rid of bogus lint error
+    VERTEX[trailing[1].index] = trailing[1]._replace(
+        x=new_point.x, y=new_point.y)
 
 def line_formula(start, end):
     '''
