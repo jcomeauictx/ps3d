@@ -232,6 +232,13 @@ def line_formula(start, end):
 
     where m = delta y divided by delta x. if delta x is zero, it's a vertical
     line, so simply return the formula `x = c`.
+
+    >>> sorted(line_formula(Triplet(0, 0), Triplet(3, 3)).items())
+    [('c', 0.0), ('m', 1.0)]
+    >>> sorted(line_formula(Triplet(4, 4), Triplet(6, 4)).items())
+    [('c', 4.0), ('m', 0.0)]
+    >>> sorted(line_formula(Triplet(4, 4), Triplet(4, 6)).items())
+    [('x', 4)]
     '''
     delta_y = end.y - start.y
     delta_x = end.x - start.x
@@ -257,6 +264,9 @@ def intersection(line0, line1):
     putting the slopes on one side and the constants on the other, you get
     2x = -5, yielding x = -2.5, and thus y by the first formula,
     1 * -2.5 + 0, is also -2.5.
+
+    >>> intersection({'m': 1, 'c': 0}, {'m': 0, 'c': 4})
+    Triplet(x=4.0, y=4.0, z=0, type=None)
     '''
     if 'm' in line0 and 'm' in line1:
         # put the `mx`s on one side of the equation and `c`s on the other
