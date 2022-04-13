@@ -183,18 +183,20 @@ def outer_join(index, segments):
     # port bow of the first segment, and port quarter of second, now
     # become the point of intersection
     # pylint: disable=invalid-sequence-index  # get rid of bogus lint error
-    replacement = VERTEX[trailing[1].index] = trailing[1]._replace(
+    vertex = trailing[1].index
+    replacement = VERTEX[vertex] = trailing[1]._replace(
         x=new_point.x, y=new_point.y)
     trailing[1] = replacement
     logging.debug('trailing now: %s', trailing)
     # now for the hull below; assume index is at offset 4
-    VERTEX[trailing[1].index + 4] = VERTEX[trailing[1].index + 4]._replace(
+    VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
         x=new_point.x, y=new_point.y)
     # now also correct port quarter of leading segment, deck and hull below
-    replacement = VERTEX[leading[0].index] = leading[0]._replace(
+    vertex = leading[0].index
+    replacement = VERTEX[vertex] = leading[0]._replace(
         x=new_point.x, y=new_point.y)
     leading[0] = replacement
-    VERTEX[leading[0].index + 4] = VERTEX[leading[0].index + 4]._replace(
+    VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
         x=new_point.x, y=new_point.y)
 
 def line_formula(start, end):
