@@ -168,7 +168,7 @@ def join(index, segments):
     if the angle is less than 180 degrees, 'outer' will be 'port' side in
     the "ship" analogy, otherwise 'starboard'
     '''
-    outer_leading = [
+    outer_leading = [  # listed stern to bow for each grouping
         Vertex(*VERTEX[segments[index]['top'][1] - 1]),
         Vertex(*VERTEX[segments[index]['top'][0] - 1])
     ]
@@ -177,6 +177,14 @@ def join(index, segments):
         Vertex(*VERTEX[segments[index - 1]['top'][0] - 1])
     ]
     logging.debug('join: segments: %s, %s', outer_leading, outer_trailing)
+    inner_leading = [
+        Vertex(*VERTEX[segments[index]['top'][2] - 1]),
+        Vertex(*VERTEX[segments[index]['top'][3] - 1])
+    ]
+    inner_trailing = [
+        Vertex(*VERTEX[segments[index - 1]['top'][2] - 1]),
+        Vertex(*VERTEX[segments[index - 1]['top'][3] - 1])
+    ]
     new_point = intersection(
         *[line_formula(*line)
           for line in [outer_leading, outer_trailing]])
@@ -197,6 +205,24 @@ def join(index, segments):
     replacement = VERTEX[vertex] = outer_leading[0]._replace(
         x=new_point.x, y=new_point.y)
     outer_leading[0] = replacement
+    VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
+        x=new_point.x, y=new_point.y)
+    # now the same for the inner lines
+    new_point = intersection(
+        *[line_formula(*line)
+          for line in [inner_leading, inner_trailing]])
+    logging.debug('intersection: %s', new_point)
+    vertex = inner_trailing[1].index
+    replacement = VERTEX[vertex] = inner_trailing[1]._replace(
+        x=new_point.x, y=new_point.y)
+    inner_trailing[1] = replacement
+    logging.debug('inner_trailing now: %s', inner_trailing)
+    VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
+        x=new_point.x, y=new_point.y)
+    vertex = inner_leading[0].index
+    replacement = VERTEX[vertex] = inner_leading[0]._replace(
+        x=new_point.x, y=new_point.y)
+    inner_leading[0] = replacement
     VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
         x=new_point.x, y=new_point.y)
 
