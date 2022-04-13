@@ -269,7 +269,10 @@ def intersection(line0, line1):
     Triplet(x=4.0, y=4.0, z=0, type=None)
     >>> intersection({'m': 1, 'c': 2.12}, {'m': 0, 'c': 11.5})
     Triplet(x=9.379999999999999, y=11.5, z=0, type=None)
+    >>> intersection({'m': 0, 'c': 11.5}, {'m': 1, 'c': 2.12})  # order matters?
+    Triplet(x=9.379999999999999, y=11.5, z=0, type=None)
     '''
+    logging.debug('calculating intersection of lines %s and %s', line0, line1)
     if 'm' in line0 and 'm' in line1:
         # put the `mx`s on one side of the equation and `c`s on the other
         # then divide by the x multiplier, leaving x
