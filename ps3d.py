@@ -190,6 +190,12 @@ def outer_join(index, segments):
     # now for the hull below; assume index is at offset 4
     VERTEX[trailing[1].index + 4] = VERTEX[trailing[1].index + 4]._replace(
         x=new_point.x, y=new_point.y)
+    # now also correct port quarter of leading segment, deck and hull below
+    replacement = VERTEX[leading[0].index] = leading[0]._replace(
+        x=new_point.x, y=new_point.y)
+    leading[0] = replacement
+    VERTEX[leading[0].index + 4] = VERTEX[leading[0].index + 4]._replace(
+        x=new_point.x, y=new_point.y)
 
 def line_formula(start, end):
     '''
