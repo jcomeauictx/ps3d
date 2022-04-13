@@ -52,6 +52,11 @@ Triplet.__mul__ = lambda self, other: Triplet(  # only scalar
 )
 # check equality only for x, y, z
 Triplet.__eq__ = lambda self, other: self[:3] == other[:3]
+# Vertex is a triplet that returns its index into VERTEX
+Vertex = type('Vertex', (Triplet,), {})
+Vertex.index = property(
+    lambda v: VERTEX.index(v)  # pylint: disable=unnecessary-lambda
+)
 
 def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
     '''
@@ -168,9 +173,15 @@ def outer_join(index, segments):
         triplet = VERTEX[index1 - 1]
         return triplet._replace(type=index1 - 1)
     #get = lambda top, vertex: VERTEX[top[vertex] - 1]
-    #leading = segments[index]['top'][1] - 1
-    #trailing = segments[index - 1]['top'][0] - 1
-    #logging.debug('outer_join: segments: %s, %s', leading, trailing)
+    leading = Vertex(
+        VERTEX[segments[index]['top'][1] - 1],
+        VERTEX[segments[index]['top'][0] - 1]
+    )
+    trailing = Vertex(
+        VERTEX[segments[index - 1]['top'][1] - 1],
+        VERTEX[segments[index - 1]['top'][0] - 1]
+    )
+    logging.debug('outer_join: segments: %s, %s', leading, trailing)
     outer_lines = [
         [get(top, 1), get(top, 0)]
         for top in (segments[index]['top'], segments[index - 1]['top'])
