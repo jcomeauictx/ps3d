@@ -261,7 +261,7 @@ def intersection(line0, line1):
     if 'm' in line0 and 'm' in line1:
         # put the `mx`s on one side of the equation and `c`s on the other
         # then divide by the x multiplier, leaving x
-        x_value = line0['c'] - line1['c'] / (line0['m'] - line1['m'])
+        x_value = line1['c'] - line0['c'] / (line0['m'] - line1['m'])
     elif 'x' in line0:
         line0, line1 = line1, line0  # swap them
         x_value = line1['x']
