@@ -267,6 +267,8 @@ def intersection(line0, line1):
 
     >>> intersection({'m': 1, 'c': 0}, {'m': 0, 'c': 4})
     Triplet(x=4.0, y=4.0, z=0, type=None)
+    >>> intersection({'m': 1, 'c': 2.12}, {'m': 0, 'c': 11.5})
+    Triplet(x=9.379999999999999, y=11.5, z=0, type=None)
     '''
     if 'm' in line0 and 'm' in line1:
         # put the `mx`s on one side of the equation and `c`s on the other
