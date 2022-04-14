@@ -234,12 +234,15 @@ def line_formula(start, end):
     where m = delta y divided by delta x. if delta x is zero, it's a vertical
     line, so simply return the formula `x = c`.
 
+    for purposes of this program, also return `z` value from start, which is
+    assumed to be same as end.
+
     >>> sorted(line_formula(Triplet(0, 0), Triplet(3, 3)).items())
-    [('c', 0.0), ('m', 1.0)]
+    [('c', 0.0), ('m', 1.0), ('z', 0)]
     >>> sorted(line_formula(Triplet(4, 4), Triplet(6, 4)).items())
-    [('c', 4.0), ('m', 0.0)]
-    >>> sorted(line_formula(Triplet(4, 4), Triplet(4, 6)).items())
-    [('x', 4)]
+    [('c', 4.0), ('m', 0.0), ('z', 0)]
+    >>> sorted(line_formula(Triplet(4, 4, 3), Triplet(4, 6)).items())
+    [('x', 4), ('z', 3)]
     '''
     delta_y = end.y - start.y
     delta_x = end.x - start.x
@@ -251,6 +254,7 @@ def line_formula(start, end):
         formula['c'] = start.y - formula['m'] * start.x
     logging.debug('delta_x: %s, delta_y: %s, formula: %s',
                   delta_x, delta_y, formula)
+    formula['z'] = start.z
     return formula
 
 def intersection(line0, line1):
@@ -283,7 +287,7 @@ def intersection(line0, line1):
         x_value = line1['x']
     y_value = line0['m'] * x_value + line0['c']
     logging.debug('intersection: (%.3f, %.3f)', x_value, y_value)
-    return Triplet(x_value, y_value)
+    return Triplet(x_value, y_value, line0.get('z', 0))
 
 def ps3d():
     '''
