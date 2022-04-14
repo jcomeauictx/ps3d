@@ -176,7 +176,6 @@ def join(index, segments):
         Vertex(*VERTEX[segments[index - 1]['top'][1] - 1]),
         Vertex(*VERTEX[segments[index - 1]['top'][0] - 1])
     ]
-    logging.debug('join: segments: %s, %s', outer_leading, outer_trailing)
     inner_leading = [
         Vertex(*VERTEX[segments[index]['top'][2] - 1]),
         Vertex(*VERTEX[segments[index]['top'][3] - 1])
@@ -185,6 +184,7 @@ def join(index, segments):
         Vertex(*VERTEX[segments[index - 1]['top'][2] - 1]),
         Vertex(*VERTEX[segments[index - 1]['top'][3] - 1])
     ]
+    logging.debug('join: segments: %s, %s', outer_leading, outer_trailing)
     new_point = intersection(
         *[line_formula(*line)
           for line in [outer_leading, outer_trailing]])
@@ -435,17 +435,16 @@ def ps3d():
 
         for index in range(len(path) - 1):
             segments.append(get_faces(path[index], path[index + 1]))
+        # now join the segments seamlessly
+        for index in range(1, len(segments)):
+            join(index, segments)
+
         FACE.append(segments[0]['start'])  # near end cap
         for segment in segments:
             FACE.extend([
                 segment[k] for k in ('top', 'left', 'bottom', 'right')
             ])
         FACE.append(segments[-1]['end'])  # far end cap
-
-        # now join the segments seamlessly
-
-        for index in range(1, len(segments)):
-            join(index, segments)
 
         DEVICE['Path'] = []  # clear path after stroke
 
