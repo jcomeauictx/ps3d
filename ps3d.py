@@ -157,72 +157,73 @@ def join(index, segments):
     '''
     make a seamless join where two segments meet
 
+    modifies `segments` list in-place (calling routine recieves changes)
+
     this is a bit complicated. remember:
     `segments` is a list of line segments forming a path: [SEG, SEG, ...]
     each SEG is a dict: {'top': [V, V, V, V], 'bottom': [V, V, V, V], ...}
     each V is a 1-based index into VERTEX
     VERTEX[V - 1] is a Triplet of (x, y, z)
-    first, we want to determine the intersection of the outer lines of
+    first, we want to determine the intersection of the port lines of
     each segment, then modify those vertices to the intersection point.
-    then do the same with the inner lines.
-    if the angle is less than 180 degrees, 'outer' will be 'port' side in
-    the "ship" analogy, otherwise 'starboard'
+    then do the same with the starboard lines.
     '''
-    outer_leading = [  # listed stern to bow for each grouping
+    port_leading = [  # listed stern to bow for each grouping
+        # the splat (*) expands each Triplet for conversion to Vertex
         Vertex(*VERTEX[segments[index]['top'][1] - 1]),
         Vertex(*VERTEX[segments[index]['top'][0] - 1])
     ]
-    outer_trailing = [
+    port_trailing = [
         Vertex(*VERTEX[segments[index - 1]['top'][1] - 1]),
         Vertex(*VERTEX[segments[index - 1]['top'][0] - 1])
     ]
-    inner_leading = [
+    starboard_leading = [
         Vertex(*VERTEX[segments[index]['top'][2] - 1]),
         Vertex(*VERTEX[segments[index]['top'][3] - 1])
     ]
-    inner_trailing = [
+    starboard_trailing = [
         Vertex(*VERTEX[segments[index - 1]['top'][2] - 1]),
         Vertex(*VERTEX[segments[index - 1]['top'][3] - 1])
     ]
-    logging.debug('join: segments: %s, %s', outer_leading, outer_trailing)
+    logging.debug('join: segments: %s, %s', port_leading, port_trailing)
     new_point = intersection(
         *[line_formula(*line)
-          for line in [outer_leading, outer_trailing]])
+          for line in [port_leading, port_trailing]])
     logging.debug('intersection: %s', new_point)
     # port bow of the first segment, and port quarter of second, now
     # become the point of intersection
     # pylint: disable=invalid-sequence-index  # get rid of bogus lint error
-    vertex = outer_trailing[1].index
-    replacement = VERTEX[vertex] = outer_trailing[1]._replace(
+    vertex = port_trailing[1].index
+    replacement = VERTEX[vertex] = port_trailing[1]._replace(
         x=new_point.x, y=new_point.y)
-    outer_trailing[1] = replacement
-    logging.debug('outer_trailing now: %s', outer_trailing)
+    port_trailing[1] = replacement
+    logging.debug('port_trailing now: %s', port_trailing)
     # now for the hull below; assume index is at offset 4
     VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
         x=new_point.x, y=new_point.y)
     # now also correct port quarter of leading segment, deck and hull below
-    vertex = outer_leading[0].index
-    replacement = VERTEX[vertex] = outer_leading[0]._replace(
+    vertex = port_leading[0].index
+    replacement = VERTEX[vertex] = port_leading[0]._replace(
         x=new_point.x, y=new_point.y)
-    outer_leading[0] = replacement
+    port_leading[0] = replacement
     VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
         x=new_point.x, y=new_point.y)
-    # now the same for the inner lines
+    # now the same for the starboard lines
     new_point = intersection(
         *[line_formula(*line)
-          for line in [inner_leading, inner_trailing]])
+          for line in [starboard_leading, starboard_trailing]])
     logging.debug('intersection: %s', new_point)
-    vertex = inner_trailing[1].index
-    replacement = VERTEX[vertex] = inner_trailing[1]._replace(
+    vertex = starboard_trailing[1].index
+    replacement = VERTEX[vertex] = starboard_trailing[1]._replace(
         x=new_point.x, y=new_point.y)
-    inner_trailing[1] = replacement
-    logging.debug('inner_trailing now: %s', inner_trailing)
+    starboard_trailing[1] = replacement
+    logging.debug('starboard_trailing now: %s', starboard_trailing)
     VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
         x=new_point.x, y=new_point.y)
-    vertex = inner_leading[0].index
-    replacement = VERTEX[vertex] = inner_leading[0]._replace(
+    vertex = starboard_leading[0].index
+    replacement = VERTEX[vertex] = starboard_leading[0]._replace(
         x=new_point.x, y=new_point.y)
-    inner_leading[0] = replacement
+    starboard_leading[0] = replacement
     VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
         x=new_point.x, y=new_point.y)
 
