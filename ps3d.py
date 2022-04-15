@@ -193,39 +193,20 @@ def join(index, segments):
     # port bow of the first segment, and port quarter of second, now
     # become the point of intersection
     # pylint: disable=invalid-sequence-index  # get rid of bogus lint error
-    vertex = port_trailing[1].index
-    replacement = VERTEX[vertex] = port_trailing[1]._replace(
-        x=new_point.x, y=new_point.y)
-    port_trailing[1] = replacement
-    logging.debug('port_trailing now: %s', port_trailing)
-    # now for the hull below; assume index is at offset 4
-    VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
-        x=new_point.x, y=new_point.y)
-    # now also correct port quarter of leading segment, deck and hull below
-    vertex = port_leading[0].index
-    replacement = VERTEX[vertex] = port_leading[0]._replace(
-        x=new_point.x, y=new_point.y)
-    port_leading[0] = replacement
-    VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
-        x=new_point.x, y=new_point.y)
+    vertex = get_vertex(new_point) + 1
+    segments[index - 1]['top'][0] = segments[index]['top'][1] = vertex
+    # hull below, assume z should be 0 (?FIXME)  # pylint: disable=fixme
+    vertex = get_vertex(new_point._replace(z=0)) + 1
+    segments[index - 1]['bottom'][3] = segments[index]['bottom'][2] = vertex
     # now the same for the starboard lines
     new_point = intersection(
         *[line_formula(*line)
           for line in [starboard_leading, starboard_trailing]])
     logging.debug('intersection: %s', new_point)
-    vertex = starboard_trailing[1].index
-    replacement = VERTEX[vertex] = starboard_trailing[1]._replace(
-        x=new_point.x, y=new_point.y)
-    starboard_trailing[1] = replacement
-    logging.debug('starboard_trailing now: %s', starboard_trailing)
-    VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
-        x=new_point.x, y=new_point.y)
-    vertex = starboard_leading[0].index
-    replacement = VERTEX[vertex] = starboard_leading[0]._replace(
-        x=new_point.x, y=new_point.y)
-    starboard_leading[0] = replacement
-    VERTEX[vertex + 4] = VERTEX[vertex + 4]._replace(
-        x=new_point.x, y=new_point.y)
+    vertex = get_vertex(new_point) + 1
+    segments[index - 1]['top'][3] = segments[index]['top'][2] = vertex
+    vertex = get_vertex(new_point._replace(z=0)) + 1
+    segments[index - 1]['bottom'][0] = segments[index]['bottom'][1] = vertex
 
 def line_formula(start, end):
     '''
