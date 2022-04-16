@@ -106,6 +106,7 @@ def process(line):
             process(line[endstring + 2:])  # skip ') '
             break
         if token in PS3D:
+            logging.debug('processing `%s` with STACK %s', token, STACK)
             PS3D[token]()
         else:
             try:
@@ -296,7 +297,14 @@ def ps3d():
         STACK.extend([here.x, here.y])
 
     def roll():
-        number, count = STACK.pop(), STACK.pop()
+        '''
+        STACK = [1, 2, 3, 4]
+        STACK.extend([4, 2])
+        roll()
+        STACK
+        [3, 4, 1, 2]
+        '''
+        count, number = STACK.pop(), STACK.pop()
         if count < 0:
             while count:
                 STACK.append(STACK.pop(-number))
