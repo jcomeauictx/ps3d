@@ -314,29 +314,38 @@ def ps3d():
                 STACK.insert(-number, STACK.pop())
                 count -= 1
 
+    def index():
+        '''
+        >>> STACK = [1, 2.2, 3, 4]
+        >>> index(2)
+        >>> STACK
+        [1, 2.2, 3, 4, 2.2]
+        '''
+        STACK.append(STACK[-STACK.pop() - 1])
+
     def moveto(pathtype='moveto'):
         path = DEVICE['Path'] = []  # clear current path
         path.append(Triplet(STACK.pop(-2), STACK.pop(), 0, pathtype))
 
     def rmoveto(pathtype='moveto'):
-        process('currentpoint 4 2 roll')
+        process('currentpoint 4 2 roll 3 index add exch 3 index add exch')
         return moveto(pathtype)
 
     def lineto(pathtype='lineto'):
         displacement = Triplet(STACK.pop(-2), STACK.pop(), 0, pathtype)
         here = Triplet(STACK.pop(-2), STACK.pop())
-        logging.debug('adding %s and %s and appending to %s',
-                      here, displacement, DEVICE['Path'])
-        DEVICE['Path'].append(here + displacement)
+        logging.debug('% from %s to %s', here, displacement, lineto)
+        DEVICE['Path'].append(displacement)
 
     def rlineto(pathtype='lineto'):
-        process('currentpoint 4 2 roll')
+        process('currentpoint 4 2 roll 3 index add exch 3 index add exch')
         return lineto(pathtype)
 
     def closepath(pathtype='closepath'):
         path = DEVICE['Path']
+        currentpoint()
         STACK.extend([path[0].x, path[0].y])
-        return rlineto(pathtype)
+        return lineto(pathtype)
 
     def currentpagedevice():
         STACK.append(DEVICE)
