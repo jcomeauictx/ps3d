@@ -7,7 +7,7 @@ currentpagedevice /PageSize get dup 0 get exch 1 get exch  % width height
 3 setlinewidth  % wider than 1mm
 10 10 rlineto
 -10 10 rlineto
-%10 -10 rlineto
+-10 -10 rlineto
 %closepath
 stroke
 showpage
