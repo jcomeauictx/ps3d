@@ -484,12 +484,16 @@ def ps3d():
         for index in range(1, len(segments)):
             join(index, segments)
 
-        FACE.append(segments[0]['start'])  # near end cap
+        offset = len(FACE)
         for segment in segments:
             FACE.extend([
                 segment[k] for k in ('top', 'left', 'bottom', 'right')
             ])
-        FACE.append(segments[-1]['end'])  # far end cap
+        if path[-1].type != 'closepath':
+            FACE.insert(offset, segments[0]['start'])  # near end cap
+            FACE.append(segments[-1]['end'])  # far end cap
+        else:
+            join(1, [segments[-1], segments[0]])
 
         DEVICE['Path'] = []  # clear path after stroke
 
