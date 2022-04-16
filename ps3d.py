@@ -335,7 +335,7 @@ def ps3d():
 
     def closepath(pathtype='closepath'):
         path = DEVICE['Path']
-        STACK.extend(path[0].x, path[0].y)
+        STACK.extend([path[0].x, path[0].y])
         return rlineto(pathtype)
 
     def currentpagedevice():
