@@ -52,11 +52,6 @@ Triplet.__mul__ = lambda self, other: Triplet(  # only scalar
 )
 # check equality only for x, y, z
 Triplet.__eq__ = lambda self, other: self[:3] == other[:3]
-# Vertex is a triplet that returns its index into VERTEX
-Vertex = type('Vertex', (Triplet,), {})
-Vertex.index = property(
-    lambda v: VERTEX.index(v)  # pylint: disable=unnecessary-lambda
-)
 
 def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
     '''
@@ -148,10 +143,13 @@ def get_vertex(point):
     must be 1-based to use in face ('f') statement
     '''
     try:
-        return VERTEX.index(point)
+        index = VERTEX.index(point)
     except ValueError:
         VERTEX.append(point)
-        return len(VERTEX) - 1
+        index = len(VERTEX) - 1
+    if hasattr(VERTEX[index].type, 'x'):
+        index = VERTEX.index(VERTEX[index].type)
+    return index
 
 def join(index, segments):
     '''
@@ -167,45 +165,48 @@ def join(index, segments):
     first, we want to determine the intersection of the port lines of
     each segment, then modify those vertices to the intersection point.
     then do the same with the starboard lines.
+
+    mark "moved" points by changing their `type` field to the new location,
+    and modify get_vertex to check for that.
     '''
     port_leading = [  # listed stern to bow for each grouping
-        # the splat (*) expands each Triplet for conversion to Vertex
-        Vertex(*VERTEX[segments[index]['top'][1] - 1]),
-        Vertex(*VERTEX[segments[index]['top'][0] - 1])
+        VERTEX[segments[index]['top'][1] - 1],
+        VERTEX[segments[index]['top'][0] - 1]
     ]
     port_trailing = [
-        Vertex(*VERTEX[segments[index - 1]['top'][1] - 1]),
-        Vertex(*VERTEX[segments[index - 1]['top'][0] - 1])
+        VERTEX[segments[index - 1]['top'][1] - 1],
+        VERTEX[segments[index - 1]['top'][0] - 1]
     ]
     starboard_leading = [
-        Vertex(*VERTEX[segments[index]['top'][2] - 1]),
-        Vertex(*VERTEX[segments[index]['top'][3] - 1])
+        VERTEX[segments[index]['top'][2] - 1],
+        VERTEX[segments[index]['top'][3] - 1]
     ]
     starboard_trailing = [
-        Vertex(*VERTEX[segments[index - 1]['top'][2] - 1]),
-        Vertex(*VERTEX[segments[index - 1]['top'][3] - 1])
+        VERTEX[segments[index - 1]['top'][2] - 1],
+        VERTEX[segments[index - 1]['top'][3] - 1]
     ]
     logging.debug('join: segments: %s, %s', port_leading, port_trailing)
-    new_point = intersection(
+    point = intersection(
         *[line_formula(*line)
           for line in [port_leading, port_trailing]])
-    logging.debug('intersection: %s', new_point)
+    VERTEX[segments[index]['top'][0] - 1] = port_leading[1]._replace(type=point)
+    logging.debug('intersection: %s', point)
     # port bow of the first segment, and port quarter of second, now
     # become the point of intersection
     # pylint: disable=invalid-sequence-index  # get rid of bogus lint error
-    vertex = get_vertex(new_point) + 1
+    vertex = get_vertex(point) + 1
     segments[index - 1]['top'][0] = segments[index]['top'][1] = vertex
     # hull below, assume z should be 0 (?FIXME)  # pylint: disable=fixme
-    vertex = get_vertex(new_point._replace(z=0)) + 1
+    vertex = get_vertex(point._replace(z=0)) + 1
     segments[index - 1]['bottom'][3] = segments[index]['bottom'][2] = vertex
     # now the same for the starboard lines
-    new_point = intersection(
+    point = intersection(
         *[line_formula(*line)
           for line in [starboard_leading, starboard_trailing]])
-    logging.debug('intersection: %s', new_point)
-    vertex = get_vertex(new_point) + 1
+    logging.debug('intersection: %s', point)
+    vertex = get_vertex(point) + 1
     segments[index - 1]['top'][3] = segments[index]['top'][2] = vertex
-    vertex = get_vertex(new_point._replace(z=0)) + 1
+    vertex = get_vertex(point._replace(z=0)) + 1
     segments[index - 1]['bottom'][0] = segments[index]['bottom'][1] = vertex
 
 def line_formula(start, end):
