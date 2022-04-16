@@ -328,8 +328,16 @@ def ps3d():
         path.append(Triplet(STACK.pop(-2), STACK.pop(), 0, pathtype))
 
     def rmoveto(pathtype='moveto'):
+        '''
+        >>> STACK[:] = [1, 2]
+        >>> moveto()
+        >>> STACK[:] = [3, 7]
+        >>> rmoveto()
+        >>> DEVICE['Path'][-1]
+        []
+        '''
         # add y together then x
-        process('currentpoint 4 2 roll 2 index add exch 3 index add exch')
+        process('currentpoint 2 1 roll add exch 2 1 roll add exch')
         return moveto(pathtype)
 
     def lineto(pathtype='lineto'):
