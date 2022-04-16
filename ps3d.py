@@ -194,12 +194,12 @@ def join(index, segments):
     vertex = get_vertex(new_point) + 1
     segments[index - 1]['top'][0] = segments[index]['top'][1] = \
         segments[index - 1]['left'][3] = segments[index]['left'][2] = \
-        segments[index - 1]['start'][1] = segments[index]['end'][0] = vertex
+        segments[index - 1]['end'][0] = segments[index]['start'][1] = vertex
     # hull below, assume z should be 0 (?FIXME)  # pylint: disable=fixme
     vertex = get_vertex(new_point._replace(z=0)) + 1
     segments[index - 1]['bottom'][3] = segments[index]['bottom'][2] = \
         segments[index - 1]['left'][0] = segments[index]['left'][1] = \
-        segments[index - 1]['start'][0] = segments[index]['end'][1] = vertex
+        segments[index - 1]['end'][1] = segments[index]['start'][0] = vertex
     # now the same for the starboard lines
     new_point = intersection(
         *[line_formula(*line)
@@ -208,11 +208,11 @@ def join(index, segments):
     vertex = get_vertex(new_point) + 1
     segments[index - 1]['top'][3] = segments[index]['top'][2] = \
         segments[index - 1]['right'][0] = segments[index]['right'][1] = \
-        segments[index - 1]['start'][2] = segments[index]['end'][3] = vertex
+        segments[index - 1]['end'][3] = segments[index]['start'][2] = vertex
     vertex = get_vertex(new_point._replace(z=0)) + 1
     segments[index - 1]['bottom'][0] = segments[index]['bottom'][1] = \
         segments[index - 1]['right'][3] = segments[index]['right'][2] = \
-        segments[index - 1]['start'][3] = segments[index]['end'][2] = vertex
+        segments[index - 1]['end'][2] = segments[index]['start'][3] = vertex
 
 def line_formula(start, end):
     '''
