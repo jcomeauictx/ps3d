@@ -147,8 +147,6 @@ def get_vertex(point):
     except ValueError:
         VERTEX.append(point)
         index = len(VERTEX) - 1
-    if hasattr(VERTEX[index].type, 'x'):
-        index = VERTEX.index(VERTEX[index].type)
     return index
 
 def join(index, segments):
@@ -166,8 +164,8 @@ def join(index, segments):
     each segment, then modify those vertices to the intersection point.
     then do the same with the starboard lines.
 
-    mark "moved" points by changing their `type` field to the new location,
-    and modify get_vertex to check for that.
+    each point belongs to 3 faces of "this" segment, and 3 faces of the next
+    segment, so all need to be corrected with any new values.
     '''
     port_leading = [  # listed stern to bow for each grouping
         VERTEX[segments[index]['top'][1] - 1],
@@ -186,30 +184,35 @@ def join(index, segments):
         VERTEX[segments[index - 1]['top'][3] - 1]
     ]
     logging.debug('join: segments: %s, %s', port_leading, port_trailing)
-    point = intersection(
+    new_point = intersection(
         *[line_formula(*line)
           for line in [port_leading, port_trailing]])
-    VERTEX[segments[index]['top'][0] - 1] = port_leading[1]._replace(type=point)
-    logging.debug('intersection: %s', point)
+    logging.debug('intersection: %s', new_point)
     # port bow of the first segment, and port quarter of second, now
     # become the point of intersection
     # pylint: disable=invalid-sequence-index  # get rid of bogus lint error
-    vertex = get_vertex(point) + 1
-    segments[index - 1]['top'][0] = segments[index]['top'][1] = vertex
+    vertex = get_vertex(new_point) + 1
+    segments[index - 1]['top'][0] = segments[index]['top'][1] = \
+        segments[index - 1]['left'][3] = segments[index]['left'][2] = \
+        segments[index - 1]['start'][1] = segments[index]['end'][0] = vertex
     # hull below, assume z should be 0 (?FIXME)  # pylint: disable=fixme
-    vertex = get_vertex(point._replace(z=0)) + 1
-    segments[index - 1]['bottom'][3] = segments[index]['bottom'][2] = vertex
+    vertex = get_vertex(new_point._replace(z=0)) + 1
+    segments[index - 1]['bottom'][3] = segments[index]['bottom'][2] = \
+        segments[index - 1]['left'][0] = segments[index]['left'][1] = \
+        segments[index - 1]['start'][0] = segments[index]['end'][1] = vertex
     # now the same for the starboard lines
-    point = intersection(
+    new_point = intersection(
         *[line_formula(*line)
           for line in [starboard_leading, starboard_trailing]])
-    VERTEX[segments[index]['top'][0] - 1] = starboard_leading[1]._replace(
-        type=point)
-    logging.debug('intersection: %s', point)
-    vertex = get_vertex(point) + 1
-    segments[index - 1]['top'][3] = segments[index]['top'][2] = vertex
-    vertex = get_vertex(point._replace(z=0)) + 1
-    segments[index - 1]['bottom'][0] = segments[index]['bottom'][1] = vertex
+    logging.debug('intersection: %s', new_point)
+    vertex = get_vertex(new_point) + 1
+    segments[index - 1]['top'][3] = segments[index]['top'][2] = \
+        segments[index - 1]['right'][0] = segments[index]['right'][1] = \
+        segments[index - 1]['start'][2] = segments[index]['end'][3] = vertex
+    vertex = get_vertex(new_point._replace(z=0)) + 1
+    segments[index - 1]['bottom'][0] = segments[index]['bottom'][1] = \
+        segments[index - 1]['right'][3] = segments[index]['right'][2] = \
+        segments[index - 1]['start'][3] = segments[index]['end'][2] = vertex
 
 def line_formula(start, end):
     '''
