@@ -8,7 +8,7 @@ currentpagedevice /PageSize get dup 0 get exch 1 get exch  % width height
 10 10 rlineto
 -10 10 rlineto
 -10 -10 rlineto
-%closepath
+closepath
 stroke
 showpage
 % end program
