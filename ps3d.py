@@ -203,6 +203,8 @@ def join(index, segments):
     point = intersection(
         *[line_formula(*line)
           for line in [starboard_leading, starboard_trailing]])
+    VERTEX[segments[index]['top'][0] - 1] = starboard_leading[1]._replace(
+        type=point)
     logging.debug('intersection: %s', point)
     vertex = get_vertex(point) + 1
     segments[index - 1]['top'][3] = segments[index]['top'][2] = vertex
@@ -437,7 +439,7 @@ def ps3d():
 
     def showpage():
         for vertex in VERTEX:
-            print('v %f %f %f' % vertex[:3], file=OUTPUT.obj)
+            print('v %f %f %f # %s' % vertex, file=OUTPUT.obj)
         for face in FACE:
             print('f', *face, file=OUTPUT.obj)
 
