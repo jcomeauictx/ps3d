@@ -316,7 +316,7 @@ def ps3d():
 
     def index():
         '''
-        >>> STACK = [1, 2.2, 3, 4]
+        >>> STACK[:] = [1, 2.2, 3, 4]
         >>> index(2)
         >>> STACK
         [1, 2.2, 3, 4, 2.2]
@@ -334,7 +334,7 @@ def ps3d():
     def lineto(pathtype='lineto'):
         displacement = Triplet(STACK.pop(-2), STACK.pop(), 0, pathtype)
         here = Triplet(STACK.pop(-2), STACK.pop())
-        logging.debug('% from %s to %s', here, displacement, lineto)
+        logging.debug('%s from %s to %s', pathtype, here, displacement)
         DEVICE['Path'].append(displacement)
 
     def rlineto(pathtype='lineto'):
