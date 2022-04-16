@@ -288,21 +288,47 @@ def ps3d():
     def _print():
         print('# stdout:', STACK.pop(), file=OUTPUT.obj)
 
-    def moveto():
-        DEVICE['Path'] = []  # clear current path
-        DEVICE['Path'].append(Triplet(
-            STACK.pop(-2), STACK.pop(), 0, 'moveto'
-        ))
+    def currentpoint():
+        try:
+            here = DEVICE['Path'][-1]
+        except IndexError as failure:
+            raise ValueError('No current point') from failure
+        STACK.extend([here.x, here.y])
 
-    def rlineto():
-        if DEVICE['Path']:
-            currentpoint = DEVICE['Path'][-1]
-            displacement = Triplet(STACK.pop(-2), STACK.pop(), 0, 'lineto')
-            logging.debug('adding %s and %s and appending to %s',
-                          currentpoint, displacement, DEVICE['Path'])
-            DEVICE['Path'].append(currentpoint + displacement)
-        else:
-            raise ValueError('no current point')
+    def roll():
+        number, count = STACK.pop(), STACK.pop()
+        if count < 0:
+            while count:
+                STACK.append(STACK.pop(-number))
+                count += 1
+        elif count > 0:
+            while count:
+                STACK.insert(-number, STACK.pop())
+                count -= 1
+
+    def moveto(pathtype='moveto'):
+        path = DEVICE['Path'] = []  # clear current path
+        path.append(Triplet(STACK.pop(-2), STACK.pop(), 0, pathtype))
+
+    def rmoveto(pathtype='moveto'):
+        process('currentpoint 4 2 roll')
+        return moveto(pathtype)
+
+    def lineto(pathtype='lineto'):
+        displacement = Triplet(STACK.pop(-2), STACK.pop(), 0, pathtype)
+        here = Triplet(STACK.pop(-2), STACK.pop())
+        logging.debug('adding %s and %s and appending to %s',
+                      here, displacement, DEVICE['Path'])
+        DEVICE['Path'].append(here + displacement)
+
+    def rlineto(pathtype='lineto'):
+        process('currentpoint 4 2 roll')
+        return lineto(pathtype)
+
+    def closepath(pathtype='closepath'):
+        path = DEVICE['Path']
+        STACK.extend(path[0].x, path[0].y)
+        return rlineto(pathtype)
 
     def currentpagedevice():
         STACK.append(DEVICE)
