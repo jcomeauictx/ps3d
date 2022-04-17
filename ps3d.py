@@ -416,6 +416,32 @@ def ps3d():
     def setlinewidth():
         DEVICE['LineWidth'] = STACK.pop()
 
+    def fill():
+        '''
+        fill in path with DEVICE['Color']
+
+        NOTE that if you use both `stroke` and `fill`, results may
+        not be as expected.
+        '''
+        path = DEVICE['Path']
+        linewidth = DEVICE['LineWidth']
+        if linewidth * MM < 1:
+            raise ValueError('Width less than a millimeter not likely to work')
+        if path[-1].type != 'closepath':
+            raise ValueError('Operation `fill` requires closed path')
+        top = [p._replace(z=linewidth) for p in path[:-1]]
+        # NOTE order may well be wrong (clockwise) for top and bottom
+        FACE.append([get_vertex(p) + 1 for p in top])  # add top face
+        for index in range(1, len(path) - 1):  # add the sides
+            FACE.append([
+                get_vertex(top[index]) + 1,
+                get_vertex(top[index - 1]) + 1,
+                get_vertex(path[index - 1]) + 1,
+                get_vertex(path[index]) + 1
+            ])
+        FACE.append([get_vertex(p) + 1 for p in path[:-1]])  # bottom face
+        DEVICE['Path'] = []  # clear path after fill
+
     def stroke():
         '''
         draw current path as a single, thin, ridge
