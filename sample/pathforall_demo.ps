@@ -1,0 +1,21 @@
+%!ps
+% from //riptutorial.com/postscript/example/22739/iterating-through-a-path
+(pathforall.ps) run
+20 20 moveto
+0 10 rlineto
+(after first segment) =
+showpath
+gsave stroke grestore
+-10 0 rlineto
+.5 setgray
+(after second segment) =
+showpath
+gsave stroke grestore
+closepath
+(after closepath) =
+showpath
+1 0 0 setrgbcolor
+gsave stroke grestore
+0 1 0 setrgbcolor
+fill
+showpage
