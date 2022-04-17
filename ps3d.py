@@ -441,7 +441,7 @@ def ps3d():
                 get_vertex(path[index - 1]) + 1,
                 get_vertex(path[index]) + 1
             ])
-        FACE.append([get_vertex(p) + 1 for p in reversed(path[:-1]]))  # bottom
+        FACE.append([get_vertex(p) + 1 for p in reversed(path[:-1])])  # bottom
         DEVICE['Path'] = []  # clear path after fill
 
     def stroke():
