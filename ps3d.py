@@ -431,15 +431,17 @@ def ps3d():
             raise ValueError('Operation `fill` requires closed path')
         top = [p._replace(z=linewidth) for p in path[:-1]]
         # NOTE order may well be wrong (clockwise) for top and bottom
+        # remember that DEVICE['Path'] has one extra element, `closepath`
         FACE.append([get_vertex(p) + 1 for p in top])  # add top face
-        for index in range(1, len(path) - 1):  # add the sides
+        for index in range(len(path) - 1):  # add the sides
+            logging.debug('fill: index=%d', index)
             FACE.append([
                 get_vertex(top[index]) + 1,
                 get_vertex(top[index - 1]) + 1,
                 get_vertex(path[index - 1]) + 1,
                 get_vertex(path[index]) + 1
             ])
-        FACE.append([get_vertex(p) + 1 for p in path[:-1]])  # bottom face
+        FACE.append([get_vertex(p) + 1 for p in reversed(path[:-1]]))  # bottom
         DEVICE['Path'] = []  # clear path after fill
 
     def stroke():
