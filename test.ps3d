@@ -1,5 +1,5 @@
 %!ps3d test program
-(sample/pathforall.ps) run
+%(sample/pathforall.ps) run
 1 1 add =  % that was just a test
 % move to center of page for testing with ghostscript
 currentpagedevice /PageSize get dup 0 get exch 1 get exch  % width height
@@ -10,7 +10,7 @@ currentpagedevice /PageSize get dup 0 get exch 1 get exch  % width height
 -10 10 rlineto
 -10 -10 rlineto
 closepath
-showpath
+%showpath
 stroke
 showpage
 % end program
