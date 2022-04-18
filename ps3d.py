@@ -74,6 +74,15 @@ def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
     print('g mtl0', file=OUTPUT.obj)
     print('usemtl mtl0', file=OUTPUT.obj)
     PS3D.update(ps3d())
+    process_file(infile)
+    infile.close()
+    OUTPUT.obj.close()
+    OUTPUT.mtl.close()
+
+def process_file(infile):
+    '''
+    reads and processes lines from an open filehandle
+    '''
     shebang = next(infile)
     if not shebang.startswith('%!ps3d'):
         if shebang.startswith('%!ps'):
@@ -83,9 +92,6 @@ def convert(infile=sys.stdin, objfile='stdout.obj', mtlfile='stdout.mtl'):
     for line in infile:
         print('# ps code:', line.rstrip(), file=OUTPUT.obj)
         process(line)
-    infile.close()
-    OUTPUT.obj.close()
-    OUTPUT.mtl.close()
 
 def process(line):
     '''
@@ -101,10 +107,9 @@ def process(line):
             STACK.append(token[1:])  # store literal as string
             continue
         elif token.startswith('('):
-            endstring = line.index(')')  # no nested () allowed in string!
-            STACK.append(token[1:] + line[:endstring])
-            process(line[endstring + 2:])  # skip ') '
-            break
+            string, line = extract_string(token + line)
+            STACK.append(string)
+            process(line)  # current token list is suspect, discard it
         if token in PS3D:
             logging.debug('processing `%s` with STACK %s', token, STACK)
             PS3D[token]()
@@ -114,6 +119,33 @@ def process(line):
             except ValueError as bad:
                 raise ValueError('Unknown value ' + token) from bad
         logging.debug('STACK: %s', STACK)
+
+def extract_string(line, index=1):
+    '''
+    get string encased with parentheses
+
+    should handle nested parentheses correctly
+    >>> extract_string('(this is a test) and this should remain')
+    ('this is a test', ' and this should remain')
+    '''
+    open_parens = 1  # count of nested parentheses, when zero we're done
+    string = None
+    while open_parens > 0:
+        try:
+            left = line.index('(', index)
+        except ValueError:  # assuming substring not found
+            left = sys.maxsize
+        right = line.index(')', index)  # let this raise ValueError if not found
+        if left < right:
+            open_parens += 1
+            string, remainder = extract_string(line, left + 1)
+            logging.debug('remainder: %s', remainder)  # avoids pylint warning
+            index += len(string)
+        else:
+            string = line[1:right]
+            line = line[right + 1:]
+            open_parens -= 1
+    return string, line
 
 def atan2(point0, point1):
     '''
@@ -415,6 +447,12 @@ def ps3d():
 
     def setlinewidth():
         DEVICE['LineWidth'] = STACK.pop()
+
+    def run():
+        filespec = STACK.pop()
+        infile = open(filespec)
+        process_file(infile)
+        infile.close()
 
     def fill():
         '''
