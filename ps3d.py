@@ -98,6 +98,7 @@ def process(line):
     '''
     tokenize and interpret line of ps3d code
     '''
+    # pylint: disable=too-many-branches  # can be fixed with helper functions
     tokens = line.split()
     for token in tokens:
         line = line.lstrip()[len(token):]
