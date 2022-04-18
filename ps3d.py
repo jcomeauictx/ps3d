@@ -33,6 +33,7 @@ DEVICE = {
     'LineWidth': 1,
     'RGBColor': WHITE,  # black shows as white by default
     'Path': [],
+    'State': 'executing',
 }
 MM = 25.4 / 72  # 1/72" ~= .35mm; in case we want to convert
 PS3D = {}  # words of the language
@@ -110,9 +111,23 @@ def process(line):
             string, line = extract_string(token + line)
             STACK.append(string)
             process(line)  # current token list is suspect, discard it
+            break
+        elif token.startswith('{'):
+            DEVICE['State'] = 'compiling'
+            STACK.append([])  # list to hold compiled words
+            line = token[1:] + line
+            process(line)
+            break
+        if token.endswith('}'):
+            # separate it into its own token
+            process(token[:-1] + ' }' + line)
+            break
         if token in PS3D:
-            logging.debug('processing `%s` with STACK %s', token, STACK)
-            PS3D[token]()
+            if DEVICE['State'] != 'compiling':
+                logging.debug('processing `%s` with STACK %s', token, STACK)
+                PS3D[token]()
+            else:
+                STACK[-1].append(token)
         else:
             try:
                 STACK.append(literal_eval(token))
@@ -569,8 +584,12 @@ def ps3d():
         for face in FACE:
             print('f', *face, file=OUTPUT.obj)
 
+    def _end_compile():
+        DEVICE['state'] = 'executing'
+
     words = locals()
     words['='] = _print
+    words['}'] = _end_compile
     return words
 
 if __name__ == '__main__':
