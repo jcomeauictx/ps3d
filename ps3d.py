@@ -119,9 +119,14 @@ def process(line):
             process(line)
             break
         if token.endswith('}'):
-            # separate it into its own token
-            process(token[:-1] + ' }' + line)
-            break
+            if token != '}':
+                # separate it into its own token
+                process(token[:-1] + ' }' + line)
+                break
+            else:
+                DEVICE['state'] = 'executing'
+                continue
+
         if token in PS3D:
             if DEVICE['State'] != 'compiling':
                 logging.debug('processing `%s` with STACK %s', token, STACK)
@@ -469,6 +474,11 @@ def ps3d():
         process_file(infile)
         infile.close()
 
+    def _def():
+        definition = STACK.pop()
+        name = STACK.pop()
+        PS3D.update({name: definition})
+
     def fill():
         '''
         fill in path with DEVICE['Color']
@@ -584,12 +594,9 @@ def ps3d():
         for face in FACE:
             print('f', *face, file=OUTPUT.obj)
 
-    def _end_compile():
-        DEVICE['state'] = 'executing'
-
     words = locals()
     words['='] = _print
-    words['}'] = _end_compile
+    words['def'] = _def
     return words
 
 if __name__ == '__main__':
