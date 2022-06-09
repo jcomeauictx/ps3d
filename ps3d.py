@@ -108,12 +108,12 @@ def process(line):
         if token.startswith('/'):
             STACK.append(token[1:])  # store literal as string
             continue
-        elif token.startswith('('):
+        if token.startswith('('):
             string, line = extract_string(token + line)
             STACK.append(string)
             process(line)  # current token list is suspect, discard it
             break
-        elif token.startswith('{'):
+        if token.startswith('{'):
             DEVICE['State'] = 'compiling'
             STACK.append([])  # list to hold compiled words
             line = token[1:] + line
@@ -124,9 +124,8 @@ def process(line):
                 # separate it into its own token
                 process(token[:-1] + ' }' + line)
                 break
-            else:
-                DEVICE['state'] = 'executing'
-                continue
+            DEVICE['state'] = 'executing'
+            continue
 
         if token in PS3D:
             if DEVICE['State'] != 'compiling':
